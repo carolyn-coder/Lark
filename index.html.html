@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lark — Summer 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #fef3c7 0%, #dbeafe 100%);
+    min-height: 100vh;
+    color: #1f2937;
+  }
+  .app { max-width: 1200px; margin: 0 auto; padding: 20px; }
+  header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px; flex-wrap: wrap; gap: 12px;
+  }
+  h1 { font-size: 24px; font-weight: 700; color: #0369a1; }
+  h1 span.sub { font-size: 14px; font-weight: 400; color: #6b7280; margin-left: 8px; }
+  .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  select, button, input, textarea {
+    font-family: inherit; font-size: 14px; padding: 6px 10px;
+    border: 1px solid #d1d5db; border-radius: 6px; background: white;
+  }
+  button { cursor: pointer; }
+  button.primary {
+    background: #0369a1; color: white; border-color: #0369a1;
+    padding: 8px 14px; font-weight: 500;
+  }
+  button.primary:hover { background: #075985; }
+  button.ghost { background: transparent; border: none; color: #0369a1; padding: 6px; }
+  button.ghost:hover { background: rgba(3,105,161,0.08); border-radius: 6px; }
+  .status-banner {
+    background: #fef3c7; color: #92400e; padding: 10px 14px;
+    border-radius: 6px; margin-bottom: 12px; font-size: 13px;
+    border: 1px solid #fde68a;
+  }
+  .status-banner a { color: #92400e; font-weight: 600; }
+  .legend {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin: 8px 0 16px; font-size: 12px; color: #4b5563;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 14px; height: 14px; border-radius: 4px; }
+  .month-tabs {
+    display: flex; gap: 4px; background: white; padding: 4px;
+    border-radius: 8px; margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .month-tab {
+    flex: 1; padding: 8px; text-align: center; border-radius: 6px;
+    cursor: pointer; font-weight: 500; font-size: 14px;
+  }
+  .month-tab.active { background: #0369a1; color: white; }
+  .month-tab:not(.active):hover { background: #f3f4f6; }
+  .calendar {
+    background: white; border-radius: 12px; overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .calendar-header {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    background: #f9fafb; border-bottom: 1px solid #e5e7eb;
+  }
+  .calendar-header div {
+    padding: 10px; text-align: center; font-weight: 600;
+    font-size: 12px; color: #6b7280; text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+  .day {
+    border-right: 1px solid #f3f4f6; border-bottom: 1px solid #f3f4f6;
+    min-height: 110px; padding: 6px; cursor: pointer; position: relative;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .day:hover { background: #f9fafb; }
+  .day.other-month { background: #fafafa; color: #d1d5db; cursor: default; }
+  .day.today { background: #fffbeb; }
+  .day-num { font-weight: 600; font-size: 13px; }
+  .day.today .day-num { color: #d97706; }
+  .entry-pill {
+    font-size: 11px; padding: 2px 5px; border-radius: 4px;
+    color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    line-height: 1.3;
+  }
+  .entry-pill.busy { opacity: 0.55; text-decoration: line-through; }
+  .entry-pill.hosting { box-shadow: inset 3px 0 0 rgba(255,255,255,0.7); }
+  .entry-pill.asking {
+    background-image: repeating-linear-gradient(45deg,
+      rgba(255,255,255,0.15) 0 4px, transparent 4px 8px);
+    outline: 1px dashed rgba(255,255,255,0.9); outline-offset: -2px;
+  }
+  .response-row {
+    display: flex; gap: 8px; align-items: center;
+    padding: 6px 10px; margin-top: 4px; margin-left: 22px;
+    background: rgba(16,185,129,0.08); border-radius: 6px;
+    font-size: 13px; color: #065f46;
+  }
+  .response-row .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .respond-btn {
+    background: white; border: 1px solid #10b981; color: #065f46;
+    font-size: 12px; font-weight: 500; padding: 4px 10px;
+    border-radius: 5px; cursor: pointer; margin-top: 4px; margin-left: 22px;
+  }
+  .respond-btn:hover { background: #f0fdf4; }
+  .respond-form {
+    margin-top: 6px; margin-left: 22px; padding: 10px;
+    background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px;
+  }
+  .respond-form input {
+    width: 100%; margin-bottom: 6px; font-size: 13px;
+  }
+  .respond-form .actions { display: flex; gap: 6px; }
+  .respond-form button {
+    font-size: 12px; padding: 4px 10px;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    display: none; align-items: center; justify-content: center; z-index: 100;
+    padding: 16px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white; border-radius: 12px; padding: 24px;
+    max-width: 520px; width: 100%; max-height: 90vh; overflow-y: auto;
+  }
+  .modal h2 { font-size: 18px; margin-bottom: 4px; }
+  .modal h2 + p.sub { color: #6b7280; font-size: 13px; margin-bottom: 16px; }
+  .modal-close {
+    float: right; background: transparent; border: none;
+    font-size: 24px; cursor: pointer; color: #9ca3af; padding: 0;
+    line-height: 1;
+  }
+  .entries-list { margin-bottom: 16px; }
+  .entry-row {
+    display: flex; gap: 8px; padding: 10px; border-radius: 6px;
+    margin-bottom: 6px; align-items: center;
+  }
+  .entry-row .color-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .entry-row .entry-text { flex: 1; font-size: 14px; }
+  .entry-row .entry-meta { font-size: 12px; color: #6b7280; }
+  .delete-btn {
+    background: transparent; border: none; color: #ef4444;
+    cursor: pointer; font-size: 12px; padding: 4px;
+  }
+  .new-entry {
+    background: #f9fafb; padding: 14px; border-radius: 8px;
+    border: 1px solid #e5e7eb;
+  }
+  .new-entry h3 { font-size: 14px; margin-bottom: 10px; color: #374151; }
+  .field { margin-bottom: 10px; }
+  .field label {
+    display: block; font-size: 12px; font-weight: 500;
+    color: #6b7280; margin-bottom: 4px;
+  }
+  .field select, .field input, .field textarea { width: 100%; }
+  .radio-group { display: flex; gap: 6px; flex-wrap: wrap; }
+  .radio-group label {
+    flex: 1; min-width: 90px; padding: 8px 6px;
+    border: 2px solid #e5e7eb; border-radius: 6px; cursor: pointer;
+    text-align: center; font-size: 13px; font-weight: 500;
+    transition: all 0.1s;
+  }
+  .radio-group input { display: none; }
+  .radio-group label:has(input:checked) {
+    border-color: #0369a1; background: #eff6ff; color: #0369a1;
+  }
+
+  /* Welcome */
+  .family-picker {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 8px; margin-bottom: 8px;
+  }
+  .family-btn {
+    padding: 14px; border-radius: 8px; border: 2px solid;
+    background: white; cursor: pointer; font-weight: 600; font-size: 14px;
+    text-align: left; transition: transform 0.05s;
+  }
+  .family-btn:hover { transform: translateY(-1px); }
+
+  textarea { font-family: 'SF Mono', Monaco, monospace; font-size: 12px; resize: vertical; }
+
+  @media (max-width: 640px) {
+    .day { min-height: 72px; padding: 3px; }
+    .entry-pill { font-size: 10px; padding: 1px 3px; }
+    .day-num { font-size: 12px; }
+    h1 { font-size: 18px; }
+    .calendar-header div { font-size: 10px; padding: 6px; }
+    .app { padding: 12px; }
+    .family-picker { grid-template-columns: 1fr; }
+  }
+</style>
+<style>
+  /* ===================================================
+     Playful summer palette — lilac + yellow + pink blobs
+     =================================================== */
+  :root {
+    --bg: #f3e8ff;
+    --yellow: #fde047;
+    --pink: #fbcfe8;
+    --mint: #a7f3d0;
+    --mint-bright: #6ee7b7;
+    --mint-deep: #047857;
+    --primary: #9333ea;
+    --primary-dark: #6b21a8;
+    --primary-hover: #a855f7;
+    --ink: #2d1b4e;
+    --muted: #6b5b8a;
+    --border: #e9d5ff;
+    --success: #10b981;
+    --success-bg: #ecfdf5;
+  }
+  body {
+    font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 400;
+    background: var(--bg);
+    color: var(--ink);
+    position: relative;
+    overflow-x: hidden;
+  }
+  /* Mint accent blob */
+  .blob-mint {
+    position: fixed;
+    top: 38%; right: -8%;
+    width: 28vw; height: 28vw;
+    background: var(--mint);
+    border-radius: 55% 45% 60% 40% / 50% 55% 45% 50%;
+    opacity: 0.5;
+    z-index: 0;
+    pointer-events: none;
+  }
+  @media (max-width: 640px) {
+    .blob-mint { width: 55vw; height: 55vw; top: 50%; right: -20%; }
+  }
+  body::before {
+    content: ''; position: fixed; top: -15%; right: -12%;
+    width: 45vw; height: 45vw;
+    background: var(--yellow);
+    border-radius: 40% 60% 70% 30% / 40% 50% 50% 60%;
+    z-index: 0; opacity: 0.55; pointer-events: none;
+  }
+  body::after {
+    content: ''; position: fixed; bottom: -20%; left: -15%;
+    width: 42vw; height: 42vw;
+    background: var(--pink);
+    border-radius: 60% 40% 30% 70% / 50% 60% 40% 50%;
+    z-index: 0; opacity: 0.65; pointer-events: none;
+  }
+  .app { position: relative; z-index: 1; padding: 28px 20px; max-width: 1180px; }
+  h1 {
+    font-size: 32px; font-weight: 500; color: var(--ink);
+    letter-spacing: -0.01em; line-height: 1.15;
+  }
+  h1 span.sub {
+    font-size: 13px; font-weight: 300; color: var(--muted);
+    margin-left: 10px; display: inline-block;
+  }
+  header { margin-bottom: 20px; }
+  .controls {
+    background: white; padding: 5px 8px;
+    border-radius: 999px; border: 2px solid var(--border);
+    box-shadow: 0 4px 0 var(--border);
+  }
+  .controls > span { font-weight: 400; color: var(--muted); }
+  select, input[type="text"], input[type="time"], input[type="date"] {
+    font-family: inherit; font-size: 14px;
+    padding: 7px 12px; border: 2px solid var(--border);
+    border-radius: 999px; background: white; color: var(--ink);
+    font-weight: 400;
+  }
+  select:focus, input[type="text"]:focus, input[type="time"]:focus, input[type="date"]:focus {
+    outline: none; border-color: var(--primary);
+  }
+  textarea {
+    font-family: 'SF Mono', Menlo, monospace; font-size: 12px;
+    border: 2px solid var(--border); border-radius: 14px;
+    padding: 10px; color: var(--ink);
+  }
+  button {
+    font-family: inherit; cursor: pointer; font-size: 14px;
+    padding: 7px 14px; border-radius: 999px;
+    border: 2px solid var(--border); background: white;
+    color: var(--ink); font-weight: 500;
+    transition: transform 0.08s, box-shadow 0.08s;
+  }
+  button:hover { transform: translateY(-1px); }
+  button.primary {
+    background: var(--primary); color: white; border-color: var(--primary);
+    padding: 11px 22px; font-weight: 500;
+    box-shadow: 0 4px 0 var(--primary-dark);
+  }
+  button.primary:hover {
+    background: var(--primary-hover);
+    box-shadow: 0 5px 0 var(--primary-dark);
+  }
+  button.primary:active {
+    transform: translateY(3px); box-shadow: 0 1px 0 var(--primary-dark);
+  }
+  button.ghost {
+    background: transparent; border: none; color: var(--primary);
+    font-weight: 500;
+  }
+  button.ghost:hover { background: rgba(147, 51, 234, 0.08); }
+
+  .status-banner {
+    background: linear-gradient(135deg, #fde047, #facc15);
+    color: #78350f; padding: 12px 18px; border-radius: 18px;
+    font-weight: 500; border: 2.5px solid #facc15;
+    box-shadow: 0 4px 0 #ca8a04;
+  }
+  .status-banner a { color: #78350f; font-weight: 700; }
+
+  .legend { gap: 8px; margin-bottom: 18px; }
+  .legend-item {
+    background: white; padding: 5px 12px; border-radius: 999px;
+    border: 1.5px solid var(--border); font-weight: 400;
+    box-shadow: 0 2px 0 var(--border);
+  }
+  .legend-swatch { border-radius: 50%; width: 12px; height: 12px; }
+
+  .month-tabs {
+    background: white; padding: 6px; border-radius: 22px;
+    border: 2px solid var(--border); box-shadow: 0 4px 0 var(--border);
+  }
+  .month-tab {
+    font-weight: 500; color: var(--muted); border-radius: 16px;
+    padding: 11px; transition: all 0.12s;
+  }
+  .month-tab:not(.active):hover { background: #ecfdf5; color: var(--mint-deep); }
+  .month-tab.active {
+    background: var(--primary); color: white;
+    box-shadow: 0 3px 10px rgba(147, 51, 234, 0.35);
+  }
+  .month-tab:not(.active):hover { background: var(--bg); color: var(--ink); }
+
+  .calendar {
+    background: white; border-radius: 24px; overflow: hidden;
+    border: 2px solid var(--border);
+    box-shadow: 0 6px 0 var(--border), 0 18px 50px rgba(147, 51, 234, 0.1);
+    border-top: 3px solid var(--mint-bright);
+  }
+  .calendar-header {
+    background: linear-gradient(135deg, #f3e8ff 0%, #d1fae5 50%, #fef3c7 100%);
+    border-bottom: 2px solid var(--border);
+  }
+  .calendar-header div {
+    padding: 13px; font-weight: 500; font-size: 11px;
+    color: var(--primary); letter-spacing: 0.12em;
+  }
+  .day {
+    border-right: 1px solid #f5e6ff; border-bottom: 1px solid #f5e6ff;
+  }
+  .day:hover { background: #faf5ff; }
+  .day.other-month { background: #fbf8ff; color: #d1c4e8; }
+  .day.today { background: linear-gradient(135deg, #fef3c7, #fde68a); }
+  .day-num { font-weight: 400; font-size: 14px; color: var(--ink); }
+  .day.today .day-num { color: #b45309; font-weight: 500; }
+
+  .entry-pill {
+    font-size: 11px; padding: 3px 7px; border-radius: 7px;
+    font-weight: 400; line-height: 1.3;
+  }
+
+  /* Modals */
+  .modal-overlay {
+    background: rgba(45, 27, 78, 0.5); backdrop-filter: blur(6px);
+  }
+  .modal {
+    border-radius: 28px; padding: 30px;
+    box-shadow: 0 25px 70px rgba(147, 51, 234, 0.28);
+    border: 2px solid var(--border);
+  }
+  .modal h2 { font-size: 22px; font-weight: 500; }
+  .modal h2 + p.sub { color: var(--muted); font-weight: 300; }
+  .modal-close {
+    background: var(--bg); border: none;
+    width: 34px; height: 34px; border-radius: 50%;
+    font-size: 20px; color: var(--primary); padding: 0;
+    float: right; font-weight: 400;
+  }
+  .modal-close:hover { background: var(--border); transform: rotate(90deg); transition: all 0.2s; }
+
+  .entry-row {
+    padding: 12px 14px; border-radius: 14px;
+    border: 1.5px solid transparent; margin-bottom: 8px;
+  }
+  .entry-row .color-dot { width: 11px; height: 11px; }
+  .entry-row .entry-text { font-size: 14px; font-weight: 400; }
+  .delete-btn {
+    color: #b91c1c; padding: 4px 10px; border-radius: 8px;
+    font-weight: 400;
+  }
+  .delete-btn:hover { background: #fef2f2; }
+
+  .new-entry {
+    background: linear-gradient(135deg, #faf5ff 0%, #fef3c7 100%);
+    padding: 20px; border-radius: 20px;
+    border: 2px dashed var(--border);
+  }
+  .new-entry h3 {
+    font-size: 15px; font-weight: 500; color: var(--ink); margin-bottom: 14px;
+  }
+  .field label {
+    font-size: 11px; font-weight: 500; color: var(--primary);
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+
+  .radio-group label {
+    padding: 11px 8px; border: 2.5px solid var(--border);
+    border-radius: 14px; font-weight: 400; background: white;
+    transition: all 0.12s;
+  }
+  .radio-group label:has(input[value="hosting"]:checked) {
+    border-color: var(--mint-bright);
+    background: linear-gradient(135deg, #ecfdf5, #ffffff);
+    color: var(--mint-deep);
+    box-shadow: 0 3px 0 var(--mint);
+  }
+  .radio-group label:has(input:checked) {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, #f5e6ff, #ffffff);
+    color: var(--primary);
+    box-shadow: 0 3px 0 var(--border);
+    transform: translateY(-1px);
+  }
+
+  .family-picker { gap: 12px; }
+  .family-btn {
+    padding: 18px 16px; border-radius: 18px; border-width: 3px;
+    font-size: 16px; font-weight: 500;
+    box-shadow: 0 4px 0 currentColor;
+    transition: all 0.15s;
+  }
+  .family-btn:hover {
+    transform: translateY(-3px) rotate(-1.5deg);
+    box-shadow: 0 7px 0 currentColor;
+  }
+
+  .response-row {
+    padding: 8px 12px; margin-left: 24px;
+    border: 1.5px solid #bbf7d0; border-radius: 12px;
+    font-size: 13px;
+  }
+  .respond-btn {
+    border: 2px solid var(--mint-bright); color: var(--mint-deep);
+    background: var(--success-bg);
+    font-weight: 500; padding: 7px 16px; border-radius: 999px;
+    margin-left: 24px; margin-top: 6px;
+    box-shadow: 0 3px 0 var(--mint-bright);
+  }
+  .respond-btn:hover {
+    background: #d1fae5;
+    box-shadow: 0 4px 0 var(--mint-bright);
+  }
+  .respond-btn:hover {
+    background: #f0fdf4; transform: translateY(-1px);
+    box-shadow: 0 4px 0 var(--success);
+  }
+  .respond-form {
+    margin-left: 24px; padding: 14px; border-radius: 14px;
+    border: 2px solid #bbf7d0;
+  }
+
+  /* Login screen */
+  .login-screen {
+    position: fixed; inset: 0; z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px; background: var(--bg);
+  }
+  .login-card {
+    background: white; padding: 36px 32px; border-radius: 28px;
+    border: 2px solid var(--border);
+    box-shadow: 0 8px 0 var(--border), 0 24px 60px rgba(147, 51, 234, 0.15);
+    max-width: 420px; width: 100%; text-align: center;
+    position: relative; z-index: 1;
+  }
+  .login-mark {
+    font-size: 14px; color: var(--primary); font-weight: 500;
+    letter-spacing: 0.04em; margin-bottom: 12px;
+  }
+  .login-card h1 {
+    font-size: 30px; font-weight: 500; color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .login-lead {
+    color: var(--muted); font-size: 14px; line-height: 1.5;
+    margin-bottom: 22px; font-weight: 300;
+  }
+  .login-card form {
+    display: flex; flex-direction: column; gap: 10px;
+    margin-bottom: 14px;
+  }
+  .login-card input[type="email"] {
+    padding: 12px 16px; font-size: 15px;
+    border: 2px solid var(--border); border-radius: 999px;
+    background: white; text-align: center;
+  }
+  .login-card input[type="email"]:focus {
+    outline: none; border-color: var(--primary);
+  }
+  .login-card button.primary {
+    width: 100%; padding: 13px 22px; font-size: 15px;
+  }
+  .login-status {
+    color: var(--mint-deep); font-size: 14px;
+    min-height: 20px; margin: 8px 0; font-weight: 400;
+  }
+  .login-status.error { color: #b91c1c; }
+  .login-fine {
+    font-size: 12px; color: var(--muted);
+    font-weight: 300; margin-top: 12px;
+  }
+
+  /* Finalized / locked entries */
+  .entry-pill.finalized {
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,0.9), 0 0 0 2px var(--mint-bright);
+  }
+  .entry-row.finalized {
+    border: 2px solid var(--mint-bright) !important;
+    background: linear-gradient(135deg, #ecfdf5, #ffffff) !important;
+  }
+  .lock-badge {
+    margin-left: 8px; padding: 2px 8px;
+    background: var(--mint); color: var(--mint-deep);
+    border-radius: 999px; font-size: 11px; font-weight: 500;
+  }
+  .finalize-btn, .unlock-btn {
+    font-size: 12px; padding: 4px 10px; border-radius: 999px;
+    border: 1.5px solid var(--mint-bright); background: white;
+    color: var(--mint-deep); cursor: pointer; font-weight: 500;
+  }
+  .finalize-btn:hover { background: var(--success-bg); }
+  .unlock-btn {
+    background: var(--mint); color: var(--mint-deep);
+    border-color: var(--mint-bright);
+  }
+  .unlock-btn:hover { background: var(--mint-bright); color: white; }
+
+  /* Group chat */
+  .chat-card {
+    background: white; margin-top: 28px; border-radius: 24px;
+    border: 2px solid var(--border);
+    box-shadow: 0 6px 0 var(--border), 0 18px 50px rgba(147, 51, 234, 0.08);
+    overflow: hidden;
+  }
+  .chat-header {
+    padding: 16px 20px; border-bottom: 1.5px solid var(--border);
+    background: linear-gradient(135deg, #f3e8ff, #d1fae5);
+  }
+  .chat-header h2 { font-size: 17px; font-weight: 500; color: var(--ink); margin: 0; }
+  .chat-sub { font-size: 12px; color: var(--muted); font-weight: 300; }
+  .chat-list {
+    padding: 14px 18px; max-height: 360px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .chat-empty {
+    color: var(--muted); font-size: 13px; text-align: center;
+    padding: 20px; font-weight: 300;
+  }
+  .chat-msg {
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .chat-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 13px; font-weight: 500; flex-shrink: 0;
+  }
+  .chat-bubble {
+    flex: 1; background: #faf5ff; padding: 8px 12px; border-radius: 14px;
+    border-top-left-radius: 4px;
+  }
+  .chat-msg.mine .chat-bubble {
+    background: #ecfdf5; border-top-left-radius: 14px; border-top-right-radius: 4px;
+  }
+  .chat-msg.mine { flex-direction: row-reverse; }
+  .chat-meta {
+    font-size: 11px; color: var(--muted); font-weight: 400;
+    margin-bottom: 2px; display: flex; justify-content: space-between; gap: 8px;
+  }
+  .chat-text {
+    font-size: 14px; color: var(--ink); font-weight: 400;
+    line-height: 1.4; word-wrap: break-word;
+  }
+  .chat-composer {
+    display: flex; gap: 8px; padding: 14px 18px;
+    border-top: 1.5px solid var(--border); background: #fefeff;
+  }
+  .chat-composer input {
+    flex: 1; font-size: 14px; padding: 10px 16px;
+    border: 2px solid var(--border); border-radius: 999px;
+    background: white; color: var(--ink);
+  }
+  .chat-composer input:focus { outline: none; border-color: var(--primary); }
+  .chat-composer button.primary { padding: 10px 20px; }
+
+  /* Bottom caption */
+  .app > p {
+    background: white; padding: 12px 22px !important;
+    border-radius: 20px; border: 1.5px solid var(--border);
+    box-shadow: 0 3px 0 var(--border); color: var(--muted) !important;
+    width: fit-content; max-width: 100%;
+    margin: 20px auto 0 !important;
+    font-size: 13px !important; line-height: 1.6;
+  }
+  .app > p b { color: var(--primary); }
+
+  @media (max-width: 640px) {
+    h1 { font-size: 24px; }
+    .app { padding: 18px 14px; }
+    .modal { padding: 22px; border-radius: 22px; }
+    body::before { width: 65vw; height: 65vw; }
+    body::after { width: 60vw; height: 60vw; }
+  }
+</style>
+</head>
+<body>
+<div class="blob-mint" aria-hidden="true"></div>
+
+<!-- Login screen (shown when not signed in) -->
+<div id="login-screen" class="login-screen">
+  <div class="login-card">
+    <div class="login-mark">🌿 Lark · Summer 2026</div>
+    <h1>Sign in</h1>
+    <p class="login-lead">A shared board for an unprogrammed summer — pool days, tennis, camp, music, bike rides, sleepovers. Enter your email and we'll send you a one-time sign-in link.</p>
+    <form id="login-form" onsubmit="sendMagicLink(event)">
+      <input type="email" id="login-email" placeholder="you@example.com" required autocomplete="email">
+      <button type="submit" class="primary">Send sign-in link</button>
+    </form>
+    <p id="login-status" class="login-status"></p>
+    <p class="login-fine">If you don't see the email, check spam. The link works on any device.</p>
+  </div>
+</div>
+
+<div class="app" style="display:none">
+<!-- everything below renders only when signed in -->
+  <header>
+    <h1>🌿 Lark <span class="sub">Summer 2026 · bikes, pools & backyards for Lillian, Harper, Randi &amp; Kat</span></h1>
+    <div class="controls">
+      <span style="font-size:13px;color:#6b7280">I am:</span>
+      <select id="who-am-i"></select>
+      <span style="font-size:13px;color:#6b7280;margin-left:4px;">View:</span>
+      <select id="view-filter">
+        <option value="all">All families</option>
+      </select>
+      <button class="ghost" id="settings-btn" title="Settings">⚙️</button>
+    </div>
+  </header>
+
+  <div class="legend" id="legend"></div>
+
+  <div class="month-tabs" id="month-tabs"></div>
+
+  <div class="calendar">
+    <div class="calendar-header">
+      <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+    </div>
+    <div class="calendar-grid" id="calendar-grid"></div>
+  </div>
+
+  <p style="text-align:center; color:#6b7280; font-size:12px; margin-top:16px;">
+    Click any day to add: <b>🤝 Can help / host</b> · <b>🙏 Need help</b> · <b>🏊 Kid going to</b> · <b>🚫 Kid busy</b><br>
+    <span style="color:#9ca3af;">Tap an offer or ask from another family to respond.</span>
+  </p>
+
+  <!-- Group chat -->
+  <section class="chat-card" id="chat-card">
+    <div class="chat-header">
+      <h2>💬 Group chat</h2>
+      <span class="chat-sub">Everyone in the group sees this.</span>
+    </div>
+    <div class="chat-list" id="chat-list">
+      <p class="chat-empty">No messages yet. Say hi 👋</p>
+    </div>
+    <form class="chat-composer" id="chat-composer" onsubmit="sendChat(event)">
+      <input type="text" id="chat-input" placeholder="Message the group..." autocomplete="off" maxlength="500">
+      <button type="submit" class="primary">Send</button>
+    </form>
+  </section>
+</div>
+
+<!-- Day Entry Modal -->
+<div class="modal-overlay" id="day-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeDayModal()">×</button>
+    <h2 id="day-modal-title">Day</h2>
+    <p class="sub" id="day-modal-sub"></p>
+    <div class="entries-list" id="entries-list"></div>
+    <div class="new-entry">
+      <h3>Add entry for <span id="logged-in-name-1" style="color:#0369a1"></span></h3>
+      <div class="field">
+        <label>Type</label>
+        <div class="radio-group" id="type-radio">
+          <label><input type="radio" name="entry-type" value="hosting" checked>🤝 Can help / host</label>
+          <label><input type="radio" name="entry-type" value="asking">🙏 Need help</label>
+          <label><input type="radio" name="entry-type" value="going">🏊 Kid going to</label>
+          <label><input type="radio" name="entry-type" value="busy">🚫 Kid busy</label>
+        </div>
+      </div>
+      <div class="field" id="location-field">
+        <label id="location-label">Location</label>
+        <select id="entry-location">
+          <option value="">(select)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Time window (optional — leave blank for "all day")</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="time" id="entry-start-time" style="flex:1;">
+          <span style="color:#6b7280;font-size:13px;">to</span>
+          <input type="time" id="entry-end-time" style="flex:1;">
+        </div>
+        <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;">
+          <button type="button" class="ghost" style="font-size:11px;padding:2px 6px;" onclick="setTimeWindow('09:00','12:00')">Morning</button>
+          <button type="button" class="ghost" style="font-size:11px;padding:2px 6px;" onclick="setTimeWindow('12:00','16:00')">Afternoon</button>
+          <button type="button" class="ghost" style="font-size:11px;padding:2px 6px;" onclick="setTimeWindow('10:00','15:00')">Pool hours</button>
+          <button type="button" class="ghost" style="font-size:11px;padding:2px 6px;" onclick="setTimeWindow('','')">Clear</button>
+        </div>
+      </div>
+      <div class="field">
+        <label id="notes-label">Notes (optional)</label>
+        <input type="text" id="entry-notes" placeholder="e.g., bringing lunch, can take up to 3 kids, camp pickup at 4pm">
+      </div>
+      <div class="field">
+        <label>Repeat</label>
+        <select id="entry-repeat">
+          <option value="none">Just this day</option>
+          <option value="daily">Every day</option>
+          <option value="weekdays">Every weekday (Mon–Fri)</option>
+          <option value="weekly">Same weekday every week</option>
+        </select>
+      </div>
+      <div class="field" id="repeat-until-field" style="display:none;">
+        <label>Repeat until (inclusive)</label>
+        <input type="date" id="entry-repeat-until" min="2026-05-01" max="2026-09-30" value="2026-08-31">
+      </div>
+      <button class="primary" onclick="saveEntry()">Add entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeSettingsModal()">×</button>
+    <h2>Settings</h2>
+    <p class="sub">Account &amp; sync.</p>
+    <div class="field">
+      <label>Signed in as</label>
+      <p id="storage-status" style="font-size:14px; color:var(--ink);">—</p>
+    </div>
+    <div class="field">
+      <label>Storage</label>
+      <p style="font-size:13px; color:var(--muted);">✅ Live syncing via Supabase. All signed-in parents see the same data.</p>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <button class="ghost" onclick="exportData()">Export data (JSON backup)</button>
+      <button class="primary" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+</div>
+
+<!-- Welcome Modal -->
+<div class="modal-overlay" id="welcome-modal">
+  <div class="modal">
+    <h2>👋 Welcome to Lark</h2>
+    <p class="sub">A shared summer for Lillian, Harper, Randi &amp; Kat. Which family are you?</p>
+    <div class="family-picker" id="welcome-families"></div>
+    <p style="font-size:12px;color:#9ca3af;margin-top:8px;">You can change this later using the dropdown at the top.</p>
+  </div>
+</div>
+
+<script type="module">
+  // ==============================================================
+  // ▼▼ PASTE YOUR SUPABASE CONFIG HERE (from SUPABASE_SETUP.md) ▼▼
+  //
+  // Required to run. Once filled in, the app gates behind email sign-in
+  // and only invited parents (added in Supabase Dashboard → Auth → Users)
+  // can use it.
+  //
+  const SUPABASE_URL = "https://llorsifnyshecrolerii.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_x4Z7sfQQG8QLL-misE0ntg__2wpvN2D";
+  // ▲▲ END SUPABASE CONFIG ▲▲
+  // ==============================================================
+
+  // ==== Config — edit these to match your group ====
+  const FAMILIES = [
+    { id: 'borntrager', name: 'Borntrager', kid: 'Randi',   color: '#f59e0b' },
+    { id: 'waldo',      name: 'Waldo',      kid: 'Lillian', color: '#10b981' },
+    { id: 'hanna',      name: 'Hanna',      kid: 'Harper',  color: '#ef4444' },
+    { id: 'nuber',      name: 'Nuber',      kid: 'Kat',     color: '#8b5cf6' }
+  ];
+
+  const LOCATIONS = [
+    { id: 'brookside_cc',     name: 'Brookside Country Club' },
+    { id: 'worthington_cc',   name: 'Worthington Hills Country Club' },
+    { id: 'borntrager_house', name: 'Borntrager House' },
+    { id: 'waldo_house',      name: 'Waldo House' },
+    { id: 'hanna_house',      name: 'Hanna House' },
+    { id: 'nuber_house',      name: 'Nuber House' },
+    { id: 'camp',             name: 'Camp' },
+    { id: 'other',            name: 'Other' }
+  ];
+
+  // Summer 2026: Memorial Day May 25, Labor Day Sep 7
+  const MONTHS = [
+    { key: '2026-05', name: 'May',  year: 2026, month: 4 },
+    { key: '2026-06', name: 'June', year: 2026, month: 5 },
+    { key: '2026-07', name: 'July', year: 2026, month: 6 },
+    { key: '2026-08', name: 'Aug',  year: 2026, month: 7 },
+    { key: '2026-09', name: 'Sep',  year: 2026, month: 8 }
+  ];
+
+  // ==== State ====
+  let currentMonth = MONTHS[1]; // default to June
+  let loggedInFamily = localStorage.getItem('loggedInFamily') || null;
+  let viewFilter = localStorage.getItem('viewFilter') || 'all';
+  let entries = {};
+  let chatMessages = {};
+  let sb = null;            // Supabase client
+  let currentUser = null;   // signed-in user
+  let realtimeChans = [];
+
+  // ==== Init ====
+  async function init() {
+    // Sanity check Supabase config
+    if (!SUPABASE_URL || SUPABASE_URL.includes('YOUR-PROJECT') || !SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.includes('YOUR-ANON-KEY')) {
+      document.getElementById('login-status').innerHTML =
+        '⚠️ Setup needed — open <code>summer-schedule.html</code> in a text editor and paste your Supabase URL + anon key. See <code>SUPABASE_SETUP.md</code>.';
+      document.getElementById('login-status').classList.add('error');
+      document.getElementById('login-form').style.display = 'none';
+      return;
+    }
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Listen for auth changes
+    sb.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session)  bootSignedIn(session);
+      if (event === 'SIGNED_OUT')            showLogin();
+    });
+
+    // Check for existing session
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) bootSignedIn(session);
+    else showLogin();
+  }
+
+  function showLogin() {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.querySelector('.app').style.display = 'none';
+  }
+
+  async function bootSignedIn(session) {
+    currentUser = session.user;
+    // Recover loggedInFamily from user metadata if not set locally
+    if (!loggedInFamily && currentUser.user_metadata?.familyId) {
+      loggedInFamily = currentUser.user_metadata.familyId;
+      localStorage.setItem('loggedInFamily', loggedInFamily);
+    }
+    document.getElementById('login-screen').style.display = 'none';
+    document.querySelector('.app').style.display = '';
+
+    populateLoggedInSelector();
+    populateViewFilter();
+    populateLocationSelect();
+    renderLegend();
+    renderMonthTabs();
+    renderWelcomeFamilyPicker();
+    wireRecurrenceToggle();
+
+    await loadAll();
+    subscribeRealtime();
+
+    if (!loggedInFamily) openWelcomeModal();
+    renderCalendar();
+    renderChat();
+  }
+
+  // Magic-link sign in
+  window.sendMagicLink = async function(ev) {
+    ev.preventDefault();
+    const email = document.getElementById('login-email').value.trim();
+    const status = document.getElementById('login-status');
+    status.textContent = 'Sending sign-in link...';
+    status.classList.remove('error');
+    const { error } = await sb.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.origin + window.location.pathname }
+    });
+    if (error) {
+      status.textContent = 'Hmm — ' + error.message;
+      status.classList.add('error');
+    } else {
+      status.textContent = '✓ Check your email for a sign-in link from Supabase.';
+      document.getElementById('login-form').style.display = 'none';
+    }
+  };
+
+  window.signOut = async function() {
+    await sb.auth.signOut();
+    location.reload();
+  };
+
+  // Save the family choice to user_metadata once selected, so any device they sign in from gets it
+  async function persistFamilyChoice() {
+    if (!sb || !currentUser || !loggedInFamily) return;
+    try {
+      await sb.auth.updateUser({ data: { familyId: loggedInFamily } });
+    } catch (e) {
+      console.warn('Could not persist family choice', e);
+    }
+  }
+
+  async function loadAll() {
+    const [{ data: ents, error: entsErr }, { data: msgs, error: msgsErr }] = await Promise.all([
+      sb.from('entries').select('*'),
+      sb.from('messages').select('*').order('created_at', { ascending: true })
+    ]);
+    if (entsErr) console.error('entries load', entsErr);
+    if (msgsErr) console.error('messages load', msgsErr);
+    entries = {};
+    (ents || []).forEach(r => { entries[r.id] = rowToEntry(r); });
+    chatMessages = {};
+    (msgs || []).forEach(r => { chatMessages[r.id] = rowToMessage(r); });
+  }
+
+  function subscribeRealtime() {
+    realtimeChans.forEach(c => sb.removeChannel(c));
+    realtimeChans = [];
+    const entriesChan = sb.channel('entries-rt')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'entries' }, async () => {
+        await loadAll();
+        renderCalendar();
+        const dayMod = document.getElementById('day-modal');
+        if (dayMod.classList.contains('open')) renderEntriesList(dayMod.dataset.date);
+      })
+      .subscribe();
+    const msgsChan = sb.channel('messages-rt')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, async () => {
+        await loadAll();
+        renderChat();
+      })
+      .subscribe();
+    realtimeChans.push(entriesChan, msgsChan);
+  }
+
+  // ==== Snake_case (DB) <-> camelCase (JS) ====
+  function rowToEntry(r) {
+    return {
+      id: r.id,
+      familyId: r.family_id,
+      date: r.date,
+      type: r.type,
+      location: r.location,
+      startTime: r.start_time ? r.start_time.slice(0,5) : null,
+      endTime: r.end_time ? r.end_time.slice(0,5) : null,
+      notes: r.notes,
+      recurrenceId: r.recurrence_id,
+      finalized: !!r.finalized,
+      responses: r.responses || {},
+      createdAt: r.created_at ? new Date(r.created_at).getTime() : Date.now()
+    };
+  }
+  function entryToRow(e) {
+    return {
+      id: e.id,
+      family_id: e.familyId,
+      date: e.date,
+      type: e.type,
+      location: e.location || null,
+      start_time: e.startTime || null,
+      end_time: e.endTime || null,
+      notes: e.notes || null,
+      recurrence_id: e.recurrenceId || null,
+      finalized: !!e.finalized,
+      responses: e.responses || {},
+      created_by: currentUser?.id || null
+    };
+  }
+  function rowToMessage(r) {
+    return {
+      id: r.id,
+      familyId: r.family_id,
+      text: r.text,
+      createdAt: r.created_at ? new Date(r.created_at).getTime() : Date.now()
+    };
+  }
+
+  // ==== Group chat ====
+  function renderChat() {
+    const list = document.getElementById('chat-list');
+    const msgs = Object.entries(chatMessages)
+      .map(([id, m]) => ({ id, ...m }))
+      .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+    if (msgs.length === 0) {
+      list.innerHTML = '<p class="chat-empty">No messages yet. Say hi 👋</p>';
+      return;
+    }
+    list.innerHTML = msgs.map(m => {
+      const fam = FAMILIES.find(f => f.id === m.familyId);
+      const name = fam ? (fam.kid || fam.name) : '?';
+      const initials = (name[0] || '?').toUpperCase();
+      const mine = m.familyId === loggedInFamily;
+      const t = new Date(m.createdAt || 0);
+      const timeStr = t.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+      return `
+        <div class="chat-msg ${mine ? 'mine' : ''}">
+          <div class="chat-avatar" style="background:${fam?.color || '#9ca3af'}">${escapeHtml(initials)}</div>
+          <div class="chat-bubble">
+            <div class="chat-meta">
+              <b style="color:${fam?.color || 'var(--ink)'};font-weight:500;">${escapeHtml(name)}</b>
+              <span>${escapeHtml(timeStr)}</span>
+            </div>
+            <div class="chat-text">${escapeHtml(m.text || '')}</div>
+          </div>
+        </div>`;
+    }).join('');
+    // Auto-scroll to bottom
+    list.scrollTop = list.scrollHeight;
+  }
+
+  window.sendChat = async function(ev) {
+    ev.preventDefault();
+    if (!loggedInFamily) { alert('Pick which family you are first.'); return; }
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+    const id = makeId();
+    const row = { id, family_id: loggedInFamily, text, created_by: currentUser?.id || null };
+    const { error } = await sb.from('messages').insert(row);
+    if (error) { alert('Could not send: ' + error.message); return; }
+    input.value = '';
+  };
+
+  function populateViewFilter() {
+    const sel = document.getElementById('view-filter');
+    sel.innerHTML = '<option value="all">All families</option>' +
+      FAMILIES.map(f => `<option value="${f.id}">${displayName(f)}</option>`).join('');
+    sel.value = viewFilter;
+    sel.onchange = () => {
+      viewFilter = sel.value;
+      localStorage.setItem('viewFilter', viewFilter);
+      renderCalendar();
+      const dayMod = document.getElementById('day-modal');
+      if (dayMod.classList.contains('open')) renderEntriesList(dayMod.dataset.date);
+    };
+  }
+
+  function wireRecurrenceToggle() {
+    const sel = document.getElementById('entry-repeat');
+    const untilField = document.getElementById('repeat-until-field');
+    sel.onchange = () => {
+      untilField.style.display = sel.value === 'none' ? 'none' : 'block';
+    };
+    // Dynamic form hints based on entry type
+    const typeRadios = document.querySelectorAll('input[name="entry-type"]');
+    const locationLabel = document.getElementById('location-label');
+    const locationField = document.getElementById('location-field');
+    const notesInput = document.getElementById('entry-notes');
+    const notesLabel = document.getElementById('notes-label');
+    const hints = {
+      hosting: {
+        locLabel: 'Where (required) — "Borntrager House" = my house, or a country club if I\'m supervising there',
+        showLocation: true,
+        notesPH: 'e.g., "happy to take up to 3 kids", "snacks provided", "bring swimsuits"',
+        notesLabel: 'Notes (optional) — who can come, what to bring, any limits'
+      },
+      asking: {
+        locLabel: 'Where (optional) — leave blank if flexible',
+        showLocation: true,
+        notesPH: 'e.g., "meetings all day, need anyone to watch Randi", "need a ride to camp"',
+        notesLabel: 'What do you need? (optional but helpful)'
+      },
+      going: {
+        locLabel: 'Where (required)',
+        showLocation: true,
+        notesPH: 'e.g., "dropoff at 10", "pickup after 4"',
+        notesLabel: 'Notes (optional)'
+      },
+      busy: {
+        locLabel: 'Where (optional)',
+        showLocation: false,
+        notesPH: 'e.g., "doctor appointment", "visiting grandma"',
+        notesLabel: 'Reason (optional)'
+      }
+    };
+    function applyHints() {
+      const checked = document.querySelector('input[name="entry-type"]:checked');
+      const t = checked ? checked.value : 'hosting';
+      const h = hints[t];
+      locationField.style.display = h.showLocation ? 'block' : 'none';
+      locationLabel.textContent = h.locLabel;
+      notesInput.placeholder = h.notesPH;
+      notesLabel.textContent = h.notesLabel;
+    }
+    typeRadios.forEach(r => r.addEventListener('change', applyHints));
+    applyHints();
+  }
+
+  function displayName(f) {
+    return f.kid ? `${f.kid} (${f.name})` : f.name;
+  }
+
+  // "14:30" -> "2:30pm"; "" -> ""
+  function fmtTime(t) {
+    if (!t) return '';
+    const [h, m] = t.split(':').map(Number);
+    const suffix = h >= 12 ? 'pm' : 'am';
+    const h12 = ((h + 11) % 12) + 1;
+    return m === 0 ? `${h12}${suffix}` : `${h12}:${String(m).padStart(2,'0')}${suffix}`;
+  }
+  function fmtTimeRange(start, end) {
+    if (!start && !end) return '';
+    if (start && end) return `${fmtTime(start)}–${fmtTime(end)}`;
+    if (start) return `from ${fmtTime(start)}`;
+    return `until ${fmtTime(end)}`;
+  }
+
+  window.setTimeWindow = function(start, end) {
+    document.getElementById('entry-start-time').value = start;
+    document.getElementById('entry-end-time').value = end;
+  };
+
+  function makeId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+
+  // ==== UI helpers ====
+  function populateLoggedInSelector() {
+    const sel = document.getElementById('who-am-i');
+    sel.innerHTML = FAMILIES.map(f => `<option value="${f.id}">${displayName(f)}</option>`).join('');
+    if (loggedInFamily) sel.value = loggedInFamily;
+    sel.onchange = () => {
+      loggedInFamily = sel.value;
+      localStorage.setItem('loggedInFamily', loggedInFamily);
+      updateLoggedInNames();
+      persistFamilyChoice();
+    };
+    updateLoggedInNames();
+  }
+  function updateLoggedInNames() {
+    const fam = FAMILIES.find(f => f.id === loggedInFamily);
+    document.getElementById('logged-in-name-1').textContent = fam ? displayName(fam) : '(pick a family)';
+  }
+  function populateLocationSelect() {
+    const sel = document.getElementById('entry-location');
+    sel.innerHTML = '<option value="">(select)</option>' +
+      LOCATIONS.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+  }
+  function renderLegend() {
+    const el = document.getElementById('legend');
+    el.innerHTML = FAMILIES.map(f =>
+      `<div class="legend-item"><div class="legend-swatch" style="background:${f.color}"></div>${displayName(f)}</div>`
+    ).join('');
+  }
+  function renderWelcomeFamilyPicker() {
+    const el = document.getElementById('welcome-families');
+    el.innerHTML = FAMILIES.map(f =>
+      `<button class="family-btn" style="border-color:${f.color};color:${f.color}" data-fid="${f.id}">${displayName(f)}</button>`
+    ).join('');
+    el.querySelectorAll('button').forEach(b => {
+      b.onclick = () => {
+        loggedInFamily = b.dataset.fid;
+        localStorage.setItem('loggedInFamily', loggedInFamily);
+        document.getElementById('who-am-i').value = loggedInFamily;
+        updateLoggedInNames();
+        persistFamilyChoice();
+        closeWelcomeModal();
+      };
+    });
+  }
+  function renderMonthTabs() {
+    const el = document.getElementById('month-tabs');
+    el.innerHTML = MONTHS.map(m =>
+      `<div class="month-tab ${m.key === currentMonth.key ? 'active' : ''}" data-key="${m.key}">${m.name}</div>`
+    ).join('');
+    el.querySelectorAll('.month-tab').forEach(t => {
+      t.onclick = () => {
+        currentMonth = MONTHS.find(m => m.key === t.dataset.key);
+        renderMonthTabs();
+        renderCalendar();
+      };
+    });
+  }
+  // (status banner removed — Supabase is required, hosted, and live for all signed-in users)
+
+  // ==== Calendar ====
+  function renderCalendar() {
+    const grid = document.getElementById('calendar-grid');
+    grid.innerHTML = '';
+    const { year, month } = currentMonth;
+    const first = new Date(year, month, 1);
+    const startDow = first.getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const prevDays = new Date(year, month, 0).getDate();
+    const todayStr = new Date().toISOString().slice(0, 10);
+
+    for (let i = 0; i < startDow; i++) {
+      const d = document.createElement('div');
+      d.className = 'day other-month';
+      d.innerHTML = `<div class="day-num">${prevDays - startDow + i + 1}</div>`;
+      grid.appendChild(d);
+    }
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const cell = document.createElement('div');
+      cell.className = 'day' + (dateStr === todayStr ? ' today' : '');
+      cell.dataset.date = dateStr;
+      cell.onclick = () => openDayModal(dateStr);
+      const pills = entriesForDate(dateStr).map(e => {
+        const fam = FAMILIES.find(f => f.id === e.familyId);
+        const who = fam?.kid || fam?.name || '?';
+        const loc = LOCATIONS.find(l => l.id === e.location);
+        const timeStr = fmtTimeRange(e.startTime, e.endTime);
+        const timeChip = timeStr ? ` ${timeStr}` : '';
+        const respCount = e.responses ? Object.keys(e.responses).length : 0;
+        const respBadge = respCount > 0 ? ` ✓${respCount}` : '';
+        const lockChip = e.finalized ? '🔒 ' : '';
+        let label = '';
+        if (e.type === 'hosting') label = `${lockChip}🤝 ${who}${timeChip}${loc ? ' @ ' + shortLoc(loc) : ''}${respBadge}`;
+        else if (e.type === 'asking') label = `${lockChip}🙏 ${who}${timeChip}${loc ? ' @ ' + shortLoc(loc) : ''}${respBadge}`;
+        else if (e.type === 'going') label = `${lockChip}🏊 ${who}${timeChip} → ${loc ? shortLoc(loc) : '?'}`;
+        else if (e.type === 'busy') label = `${lockChip}🚫 ${who}${timeChip}${e.notes ? ': ' + e.notes : ''}`;
+        const title = label + (e.notes ? ' — ' + e.notes : '');
+        const finalClass = e.finalized ? ' finalized' : '';
+        return `<div class="entry-pill ${e.type}${finalClass}" style="background:${fam?.color||'#999'}" title="${escapeAttr(title)}">${escapeHtml(label)}</div>`;
+      }).join('');
+      cell.innerHTML = `<div class="day-num">${day}</div>${pills}`;
+      grid.appendChild(cell);
+    }
+    // trailing blanks to keep grid tidy
+    const totalShown = startDow + daysInMonth;
+    const trailing = (7 - (totalShown % 7)) % 7;
+    for (let i = 0; i < trailing; i++) {
+      const d = document.createElement('div');
+      d.className = 'day other-month';
+      d.innerHTML = `<div class="day-num">${i + 1}</div>`;
+      grid.appendChild(d);
+    }
+  }
+
+  function shortLoc(loc) {
+    return loc.name.replace(' Country Club', ' CC').replace(' House', '');
+  }
+  function entriesForDate(dateStr, { applyFilter = true } = {}) {
+    return Object.entries(entries)
+      .filter(([, e]) => e && e.date === dateStr)
+      .filter(([, e]) => !applyFilter || viewFilter === 'all' || e.familyId === viewFilter)
+      .map(([id, e]) => ({ id, ...e }))
+      .sort((a, b) => {
+        const at = a.startTime || '99:99';
+        const bt = b.startTime || '99:99';
+        if (at !== bt) return at.localeCompare(bt);
+        return (a.familyId || '').localeCompare(b.familyId || '');
+      });
+  }
+  function escapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function escapeAttr(s) { return escapeHtml(s); }
+
+  // ==== Day modal ====
+  window.openDayModal = function(dateStr) {
+    const mod = document.getElementById('day-modal');
+    mod.dataset.date = dateStr;
+    const d = new Date(dateStr + 'T00:00:00');
+    document.getElementById('day-modal-title').textContent = d.toLocaleDateString(undefined, {
+      weekday: 'long', month: 'long', day: 'numeric'
+    });
+    document.getElementById('day-modal-sub').textContent = d.toLocaleDateString(undefined, { year: 'numeric' });
+    renderEntriesList(dateStr);
+    mod.classList.add('open');
+  };
+  window.closeDayModal = function() {
+    document.getElementById('day-modal').classList.remove('open');
+  };
+
+  function renderEntriesList(dateStr) {
+    const list = document.getElementById('entries-list');
+    const ents = entriesForDate(dateStr);
+    if (ents.length === 0) {
+      list.innerHTML = '<p style="color:#9ca3af;font-size:14px;padding:8px 0;">No entries yet — add the first one below.</p>';
+      return;
+    }
+    list.innerHTML = ents.map(e => {
+      const fam = FAMILIES.find(f => f.id === e.familyId);
+      const who = fam?.kid || fam?.name || '?';
+      const loc = LOCATIONS.find(l => l.id === e.location);
+      const timeStr = fmtTimeRange(e.startTime, e.endTime);
+      const timeHtml = timeStr
+        ? ` <span class="entry-meta" style="font-weight:500;color:#374151;">${escapeHtml(timeStr)}</span>`
+        : ' <span class="entry-meta">all day</span>';
+      let text = '';
+      if (e.type === 'hosting') text = `🤝 <b>${escapeHtml(who)}</b> can help / host` + (loc ? ` at ${escapeHtml(loc.name)}` : '') + timeHtml;
+      else if (e.type === 'asking') text = `🙏 <b>${escapeHtml(who)}</b> needs help` + (loc ? ` at ${escapeHtml(loc.name)}` : '') + timeHtml;
+      else if (e.type === 'going') text = `🏊 <b>${escapeHtml(who)}</b> going to ${escapeHtml(loc?.name || '?')}` + timeHtml;
+      else if (e.type === 'busy') text = `🚫 <b>${escapeHtml(who)}</b> busy` + timeHtml;
+      const isMine = e.familyId === loggedInFamily;
+      const seriesBadge = e.recurrenceId ? '<span class="entry-meta" style="margin-left:6px;">🔁 series</span>' : '';
+      const lockBadge = e.finalized ? '<span class="lock-badge">🔒 Finalized</span>' : '';
+      const finalizeBtn = isMine
+        ? (e.finalized
+            ? `<button class="unlock-btn" onclick="toggleFinalized('${e.id}', false)">🔓 Unlock</button>`
+            : `<button class="finalize-btn" onclick="toggleFinalized('${e.id}', true)">🔒 Finalize</button>`)
+        : '';
+      const removeBtns = isMine
+        ? (e.recurrenceId
+            ? `<button class="delete-btn" onclick="deleteEntry('${e.id}', false)">Remove just this</button>
+               <button class="delete-btn" onclick="deleteEntry('${e.id}', true)">Remove series</button>`
+            : `<button class="delete-btn" onclick="deleteEntry('${e.id}', false)">Remove</button>`)
+        : '';
+      // Responses
+      const responses = e.responses || {};
+      const respRows = Object.entries(responses).map(([rid, r]) => {
+        const rfam = FAMILIES.find(f => f.id === r.familyId);
+        const rwho = rfam?.kid || rfam?.name || '?';
+        const verb = e.type === 'asking' ? 'can help' : 'count us in';
+        const mineResp = r.familyId === loggedInFamily;
+        return `
+          <div class="response-row">
+            <div class="dot" style="background:${rfam?.color||'#10b981'}"></div>
+            <div style="flex:1;"><b>${escapeHtml(rwho)}</b> — ${verb}${r.note ? `: <i>${escapeHtml(r.note)}</i>` : ''}</div>
+            ${mineResp ? `<button class="delete-btn" onclick="deleteResponse('${e.id}','${rid}')">Remove</button>` : ''}
+          </div>`;
+      }).join('');
+      // Respond button (only for others' offers/asks)
+      const canRespond = !isMine && (e.type === 'hosting' || e.type === 'asking');
+      const respondUI = canRespond
+        ? `<button class="respond-btn" onclick="showRespondForm('${e.id}')" id="respond-btn-${e.id}">${e.type==='asking'?'🙌 I can help!':'✋ Count us in!'}</button>
+           <div class="respond-form" id="respond-form-${e.id}" style="display:none;">
+             <input type="text" id="respond-note-${e.id}" placeholder="Optional note (e.g., 'from 10am', 'Lillian will come')">
+             <div class="actions">
+               <button class="primary" onclick="submitResponse('${e.id}')">Send</button>
+               <button class="ghost" onclick="hideRespondForm('${e.id}')">Cancel</button>
+             </div>
+           </div>`
+        : '';
+      return `
+        <div class="entry-row${e.finalized ? ' finalized' : ''}" style="background:${hexWithAlpha(fam?.color,'15')};flex-wrap:wrap;">
+          <div class="color-dot" style="background:${fam?.color}"></div>
+          <div class="entry-text">${text}${e.notes?` <span class="entry-meta">— ${escapeHtml(e.notes)}</span>`:''}${seriesBadge}${lockBadge}</div>
+          ${finalizeBtn}
+          ${removeBtns}
+          <div style="flex-basis:100%;">
+            ${respRows}
+            ${respondUI}
+          </div>
+        </div>`;
+    }).join('');
+  }
+  function hexWithAlpha(hex, alpha) { return hex ? hex + alpha : '#f3f4f6'; }
+
+  function expandRecurrence(startDate, repeat, untilDate) {
+    // Returns array of date strings (YYYY-MM-DD) including the start date.
+    const result = [startDate];
+    if (repeat === 'none' || !untilDate) return result;
+    const start = new Date(startDate + 'T00:00:00');
+    const end = new Date(untilDate + 'T00:00:00');
+    if (end <= start) return result;
+    const startDow = start.getDay();
+    const cur = new Date(start);
+    cur.setDate(cur.getDate() + 1);
+    while (cur <= end) {
+      const dow = cur.getDay();
+      let include = false;
+      if (repeat === 'daily') include = true;
+      else if (repeat === 'weekdays') include = dow >= 1 && dow <= 5;
+      else if (repeat === 'weekly') include = dow === startDow;
+      if (include) {
+        const y = cur.getFullYear();
+        const m = String(cur.getMonth() + 1).padStart(2, '0');
+        const d = String(cur.getDate()).padStart(2, '0');
+        result.push(`${y}-${m}-${d}`);
+      }
+      cur.setDate(cur.getDate() + 1);
+    }
+    return result;
+  }
+
+  window.saveEntry = async function() {
+    const mod = document.getElementById('day-modal');
+    const date = mod.dataset.date;
+    const type = document.querySelector('input[name="entry-type"]:checked').value;
+    const location = document.getElementById('entry-location').value || null;
+    const notes = document.getElementById('entry-notes').value.trim() || null;
+    const startTime = document.getElementById('entry-start-time').value || null;
+    const endTime = document.getElementById('entry-end-time').value || null;
+    const repeat = document.getElementById('entry-repeat').value;
+    const until = document.getElementById('entry-repeat-until').value;
+    if (!loggedInFamily) {
+      alert('Pick which family you are first (top-right dropdown).');
+      return;
+    }
+    if ((type === 'hosting' || type === 'going') && !location) {
+      alert('Please select a location for this entry (where you\'re hosting / where your kid is going).');
+      return;
+    }
+    if (startTime && endTime && endTime <= startTime) {
+      alert('End time must be after start time.');
+      return;
+    }
+    const dates = expandRecurrence(date, repeat, until);
+    if (repeat !== 'none' && dates.length > 1) {
+      const ok = confirm(`This will add ${dates.length} entries (${dates[0]} through ${dates[dates.length-1]}). Continue?`);
+      if (!ok) return;
+    }
+    const recurrenceId = dates.length > 1 ? makeId() : null;
+    const rows = dates.map(d => entryToRow({
+      id: makeId(),
+      date: d, type, location, notes, startTime, endTime,
+      familyId: loggedInFamily,
+      recurrenceId
+    }));
+    const { error } = await sb.from('entries').insert(rows);
+    if (error) { alert('Could not save: ' + error.message); return; }
+    // reset form
+    document.getElementById('entry-location').value = '';
+    document.getElementById('entry-notes').value = '';
+    document.getElementById('entry-start-time').value = '';
+    document.getElementById('entry-end-time').value = '';
+    document.getElementById('entry-repeat').value = 'none';
+    document.getElementById('repeat-until-field').style.display = 'none';
+  };
+
+  // ==== Responses (cooperative replies) ====
+  window.showRespondForm = function(entryId) {
+    document.getElementById('respond-btn-' + entryId).style.display = 'none';
+    document.getElementById('respond-form-' + entryId).style.display = 'block';
+  };
+  window.hideRespondForm = function(entryId) {
+    document.getElementById('respond-btn-' + entryId).style.display = '';
+    document.getElementById('respond-form-' + entryId).style.display = 'none';
+  };
+  window.submitResponse = async function(entryId) {
+    if (!loggedInFamily) { alert('Pick which family you are first.'); return; }
+    const note = document.getElementById('respond-note-' + entryId).value.trim() || null;
+    const respId = makeId();
+    const resp = { familyId: loggedInFamily, note, createdAt: Date.now() };
+    // Read current responses, merge, write back (jsonb column)
+    const cur = entries[entryId]?.responses || {};
+    const next = { ...cur, [respId]: resp };
+    const { error } = await sb.from('entries').update({ responses: next }).eq('id', entryId);
+    if (error) alert('Could not respond: ' + error.message);
+  };
+  window.deleteResponse = async function(entryId, respId) {
+    const cur = { ...(entries[entryId]?.responses || {}) };
+    delete cur[respId];
+    const { error } = await sb.from('entries').update({ responses: cur }).eq('id', entryId);
+    if (error) alert('Could not remove: ' + error.message);
+  };
+
+  window.toggleFinalized = async function(id, shouldFinalize) {
+    const target = entries[id];
+    if (!target) return;
+    if (target.familyId !== loggedInFamily) return;
+    const { error } = await sb.from('entries').update({ finalized: !!shouldFinalize }).eq('id', id);
+    if (error) alert('Could not update: ' + error.message);
+  };
+
+  window.deleteEntry = async function(id, wholeSeries) {
+    const target = entries[id];
+    if (!target) return;
+    const confirmMsg = wholeSeries
+      ? 'Remove ALL entries in this series?'
+      : 'Remove this entry?';
+    if (!confirm(confirmMsg)) return;
+    const idsToDelete = wholeSeries && target.recurrenceId
+      ? Object.entries(entries)
+          .filter(([, e]) => e && e.recurrenceId === target.recurrenceId)
+          .map(([eid]) => eid)
+      : [id];
+    const { error } = await sb.from('entries').delete().in('id', idsToDelete);
+    if (error) alert('Could not delete: ' + error.message);
+  };
+
+  // ==== Settings modal ====
+  window.openSettingsModal = function() {
+    document.getElementById('storage-status').textContent =
+      currentUser ? currentUser.email : '(not signed in)';
+    document.getElementById('settings-modal').classList.add('open');
+  };
+  window.closeSettingsModal = function() {
+    document.getElementById('settings-modal').classList.remove('open');
+  };
+  window.exportData = function() {
+    const data = JSON.stringify({ entries, exportedAt: new Date().toISOString() }, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `summer-2026-export-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  document.getElementById('settings-btn').onclick = openSettingsModal;
+
+  // ==== Welcome modal ====
+  function openWelcomeModal() { document.getElementById('welcome-modal').classList.add('open'); }
+  function closeWelcomeModal() { document.getElementById('welcome-modal').classList.remove('open'); }
+
+  // Close modals on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(ov => {
+    ov.addEventListener('click', e => {
+      if (e.target === ov) ov.classList.remove('open');
+    });
+  });
+
+  init();
+</script>
+</body>
+</html>
