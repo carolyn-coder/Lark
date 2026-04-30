@@ -381,6 +381,20 @@
   .day {
     border-right: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink);
     background: var(--card);
+    position: relative;
+  }
+  .day-weather {
+    position: absolute; top: 4px; right: 5px;
+    font-size: 13px; line-height: 1.05;
+    text-align: right; pointer-events: none;
+  }
+  .day-weather .rain-pct {
+    display: block; font-size: 9px; font-weight: 600;
+    color: var(--primary); margin-top: -1px;
+  }
+  .day-weather .temp {
+    display: block; font-size: 9px; color: var(--muted);
+    font-weight: 500;
   }
   .day:hover { background: #f7e8c4; }
   .day.other-month { background: #f3e3c0; color: #c0a880; }
@@ -945,7 +959,7 @@
   <!-- Mom chat -->
   <section class="chat-card" id="chat-card">
     <div class="chat-header">
-      <h2>💬 Mom Chat</h2>
+      <h2>💬 Summer has entered the chat</h2>
       <span class="chat-sub">For grown-up stuff — wine, books, gossip, anything that isn't kid logistics ☝️</span>
     </div>
     <div class="chat-list" id="chat-list">
@@ -1284,9 +1298,51 @@
   let entries = {};
   let chatMessages = {};
   let currentProfile = null;  // current user's profile row
+  let weatherData = {};       // date string → { code, hi, lo, rainPct }
   let sb = null;            // Supabase client
   let currentUser = null;   // signed-in user
   let realtimeChans = [];
+
+  // Default location for weather (Worthington / Columbus OH area).
+  // Change these two numbers to point at a different town.
+  const WEATHER_LAT = 40.06;
+  const WEATHER_LON = -83.06;
+
+  async function loadWeather() {
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${WEATHER_LAT}&longitude=${WEATHER_LON}` +
+        '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max' +
+        '&temperature_unit=fahrenheit&timezone=auto&forecast_days=8';
+      const r = await fetch(url);
+      const data = await r.json();
+      if (!data.daily) return;
+      weatherData = {};
+      data.daily.time.forEach((date, i) => {
+        weatherData[date] = {
+          code:    data.daily.weather_code[i],
+          hi:      Math.round(data.daily.temperature_2m_max[i]),
+          lo:      Math.round(data.daily.temperature_2m_min[i]),
+          rainPct: data.daily.precipitation_probability_max[i] || 0
+        };
+      });
+    } catch (e) {
+      console.warn('Weather load failed', e);
+    }
+  }
+
+  // WMO weather code → emoji (https://open-meteo.com/en/docs)
+  function weatherIcon(code) {
+    if (code === 0) return '☀️';
+    if (code === 1 || code === 2) return '⛅';
+    if (code === 3) return '☁️';
+    if (code === 45 || code === 48) return '🌫️';
+    if (code >= 51 && code <= 57) return '🌦️';
+    if (code >= 61 && code <= 67) return '🌧️';
+    if (code >= 71 && code <= 77) return '❄️';
+    if (code >= 80 && code <= 82) return '🌧️';
+    if (code >= 95) return '⛈️';
+    return '';
+  }
 
   // ==== Init ====
   async function init() {
@@ -1356,7 +1412,7 @@
     wireRecurrenceToggle();
 
     // Load data, THEN render UI that depends on FAMILIES
-    await loadAll();
+    await Promise.all([loadAll(), loadWeather()]);
     subscribeRealtime();
 
     // If the previously-stored familyId no longer exists in the DB, clear it
@@ -1921,7 +1977,17 @@
         const finalClass = e.finalized ? ' finalized' : '';
         return `<div class="entry-pill ${e.type}${finalClass}" style="background:${fam?.color||'#999'}" title="${escapeAttr(title)}">${escapeHtml(label)}</div>`;
       }).join('');
-      cell.innerHTML = `<div class="day-num">${day}</div>${pills}`;
+      // Weather (today + next 7 days only)
+      const w = weatherData[dateStr];
+      let wHtml = '';
+      if (w) {
+        const icon = weatherIcon(w.code);
+        const rainBadge = w.rainPct >= 30 ? `<span class="rain-pct">${w.rainPct}%</span>` : '';
+        const tempBadge = w.rainPct < 30 ? `<span class="temp">${w.hi}°</span>` : '';
+        const tip = `${w.hi}°/${w.lo}° · ${w.rainPct}% chance of rain`;
+        wHtml = `<div class="day-weather" title="${escapeAttr(tip)}">${icon}${rainBadge}${tempBadge}</div>`;
+      }
+      cell.innerHTML = `<div class="day-num">${day}</div>${wHtml}${pills}`;
       grid.appendChild(cell);
     }
     // trailing blanks to keep grid tidy
