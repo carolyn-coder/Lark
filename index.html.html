@@ -277,17 +277,20 @@
   h1 {
     font-family: 'Pacifico', cursive !important;
     font-style: normal !important;
-    font-size: 64px; font-weight: 400; color: var(--ink);
+    font-size: 84px; font-weight: 400; color: var(--ink);
     letter-spacing: 0; line-height: 1.0;
+    -webkit-text-stroke: 3px #ffffff;
+    paint-order: stroke fill;
+    text-shadow: 4px 4px 0 rgba(30, 58, 82, 0.25);
   }
   @media (max-width: 640px) {
-    h1 { font-size: 44px; }
+    h1 { font-size: 58px; -webkit-text-stroke: 2px #ffffff; }
   }
   header { margin-bottom: 20px; }
   .controls {
-    background: var(--card); padding: 5px 8px;
-    border-radius: 999px; border: 2px solid var(--border);
-    box-shadow: 0 4px 0 var(--border);
+    background: var(--card); padding: 6px 10px;
+    border-radius: 999px; border: 2.5px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--mint);
   }
   .controls > span { font-weight: 400; color: var(--muted); }
   select, input[type="text"], input[type="time"], input[type="date"] {
@@ -340,51 +343,56 @@
 
   .legend { gap: 8px; margin-bottom: 18px; }
   .legend-item {
-    background: var(--card); padding: 5px 12px; border-radius: 999px;
-    border: 1.5px solid var(--border); font-weight: 400;
-    box-shadow: 0 2px 0 var(--border);
+    background: var(--card); padding: 5px 14px; border-radius: 999px;
+    border: 2px solid var(--ink); font-weight: 500;
+    box-shadow: 3px 3px 0 var(--ink);
   }
   .legend-swatch { border-radius: 50%; width: 12px; height: 12px; }
 
   .month-tabs {
-    background: var(--card); padding: 6px; border-radius: 22px;
-    border: 2px solid var(--border); box-shadow: 0 4px 0 var(--border);
+    background: var(--card); padding: 6px; border-radius: 14px;
+    border: 3px solid var(--ink); box-shadow: 6px 6px 0 var(--mint);
   }
   .month-tab {
-    font-weight: 500; color: var(--muted); border-radius: 16px;
-    padding: 11px; transition: all 0.12s;
+    font-weight: 700; color: var(--muted); border-radius: 8px;
+    padding: 12px; transition: all 0.12s;
+    text-transform: uppercase; letter-spacing: 0.08em; font-size: 13px;
   }
-  .month-tab:not(.active):hover { background: #ecfdf5; color: var(--mint-deep); }
   .month-tab.active {
-    background: var(--primary); color: var(--card);
-    box-shadow: 0 3px 10px rgba(30, 58, 82, 0.35);
+    background: var(--ink); color: var(--yellow);
+    box-shadow: 3px 3px 0 var(--orange);
   }
   .month-tab:not(.active):hover { background: var(--yellow); color: var(--ink); }
 
   .calendar {
-    background: var(--card); border-radius: 24px; overflow: hidden;
-    border: 2px solid var(--border);
-    box-shadow: 0 6px 0 var(--border), 0 18px 50px rgba(30, 38, 56, 0.18);
-    border-top: 3px solid var(--orange);
+    background: var(--card); border-radius: 18px; overflow: hidden;
+    border: 3px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--orange);
   }
   .calendar-header {
-    background: linear-gradient(135deg, var(--bg-deep) 0%, var(--yellow) 50%, var(--mint) 100%);
-    border-bottom: 2px solid var(--border);
+    background: var(--ink);
+    border-bottom: 3px solid var(--ink);
   }
   .calendar-header div {
-    padding: 13px; font-weight: 500; font-size: 11px;
-    color: white; letter-spacing: 0.12em;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    padding: 14px; font-weight: 700; font-size: 12px;
+    color: var(--yellow); letter-spacing: 0.2em;
+    text-shadow: none;
   }
   .day {
-    border-right: 1px solid #ecdfc4; border-bottom: 1px solid #ecdfc4;
+    border-right: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink);
     background: var(--card);
   }
   .day:hover { background: #f7e8c4; }
   .day.other-month { background: #f3e3c0; color: #c0a880; }
-  .day.today { background: linear-gradient(135deg, #ffe5b8, #f8c87a); }
-  .day-num { font-weight: 400; font-size: 14px; color: var(--ink); }
-  .day.today .day-num { color: #8a4d10; font-weight: 500; }
+  .day.today {
+    background: var(--orange);
+    box-shadow: inset 0 0 0 3px var(--ink);
+  }
+  .day-num { font-weight: 500; font-size: 15px; color: var(--ink); }
+  .day.today .day-num {
+    color: white; font-weight: 700;
+    text-shadow: 1.5px 1.5px 0 var(--ink);
+  }
 
   .entry-pill {
     font-size: 11px; padding: 3px 7px; border-radius: 7px;
@@ -396,10 +404,10 @@
     background: rgba(26, 38, 56, 0.55); backdrop-filter: blur(6px);
   }
   .modal {
-    border-radius: 28px; padding: 30px;
+    border-radius: 20px; padding: 30px;
     background: var(--card);
-    box-shadow: 0 25px 70px rgba(26, 38, 56, 0.35);
-    border: 2px solid var(--border);
+    box-shadow: 10px 10px 0 var(--orange), 0 25px 60px rgba(26, 38, 56, 0.4);
+    border: 3px solid var(--ink);
   }
   .modal h2 { font-size: 22px; font-weight: 500; }
   .modal h2 + p.sub { color: var(--muted); font-weight: 300; }
@@ -425,8 +433,9 @@
 
   .new-entry {
     background: linear-gradient(135deg, var(--pink) 0%, var(--yellow) 100%);
-    padding: 20px; border-radius: 20px;
-    border: 2px dashed var(--border);
+    padding: 20px; border-radius: 14px;
+    border: 2.5px solid var(--ink);
+    box-shadow: 5px 5px 0 var(--ink);
   }
   .new-entry h3 { color: var(--ink) !important; }
   .new-entry h3 {
@@ -593,9 +602,9 @@
 
   /* Group chat */
   .chat-card {
-    background: var(--card); margin-top: 28px; border-radius: 24px;
-    border: 2px solid var(--border);
-    box-shadow: 0 6px 0 var(--border), 0 18px 50px rgba(30, 38, 56, 0.15);
+    background: var(--card); margin-top: 32px; border-radius: 18px;
+    border: 3px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--mint);
     overflow: hidden;
   }
   .chat-header {
