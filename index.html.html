@@ -541,6 +541,18 @@
     cursor: pointer;
   }
   .help-btn:hover { background: var(--yellow); transform: translateY(-1px); }
+  /* Profile button — matches help-btn but houses an SVG */
+  .profile-btn {
+    background: var(--card); border: 2px solid var(--ink);
+    color: var(--ink); width: 32px; height: 32px;
+    border-radius: 50%; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    box-shadow: 2px 2px 0 var(--ink);
+    cursor: pointer;
+    overflow: hidden;
+  }
+  .profile-btn svg { width: 22px; height: 22px; display: block; }
+  .profile-btn:hover { background: var(--yellow); transform: translateY(-1px); }
   .login-mark .lark-flower { width: 1.15em; height: 1.15em; vertical-align: -0.2em; }
   .color-picker {
     display: flex; gap: 10px; flex-wrap: wrap; padding: 6px 0;
@@ -890,7 +902,12 @@
         <option value="all">All families</option>
       </select>
       <button class="help-btn" onclick="showOnboarding()" title="How does Lark work?">?</button>
-      <button class="ghost" id="settings-btn" title="Settings">⚙️</button>
+      <button class="profile-btn" id="settings-btn" title="Profile &amp; settings" aria-label="Profile">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="9" r="3.5" fill="currentColor"/>
+          <path d="M5 19.5c1.5-4 4.2-5.5 7-5.5s5.5 1.5 7 5.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        </svg>
+      </button>
     </div>
   </header>
 
