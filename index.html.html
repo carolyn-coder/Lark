@@ -608,14 +608,30 @@
   /* Landing carousel inside the login card */
   .landing-carousel {
     margin: 16px 0 22px;
-    min-height: 170px;
+    min-height: 200px;
     display: flex; flex-direction: column; align-items: stretch;
+    position: relative;
   }
+  .landing-slides { position: relative; min-height: 170px; padding: 0 36px; }
+  .landing-arrow {
+    position: absolute; top: 50%; transform: translateY(-60%);
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--card); border: 2px solid var(--ink);
+    color: var(--ink); font-size: 22px; line-height: 1; padding: 0;
+    cursor: pointer; box-shadow: 2px 2px 0 var(--ink);
+    z-index: 2; font-weight: 600;
+  }
+  .landing-arrow:hover {
+    background: var(--yellow);
+    transform: translateY(-60%) translateY(-2px);
+    box-shadow: 2px 4px 0 var(--ink);
+  }
+  .landing-arrow-left  { left: -4px; }
+  .landing-arrow-right { right: -4px; }
   .landing-slide {
     display: none;
     text-align: center;
-    flex: 1;
-    animation: slideIn 0.45s ease;
+    animation: slideIn 0.35s ease;
   }
   .landing-slide.active { display: block; }
   @keyframes slideIn {
@@ -824,17 +840,21 @@
 
     <!-- Landing carousel -->
     <div class="landing-carousel">
-      <div class="landing-slide active" data-slide="1">
-        <h1>Welcome to Lark</h1>
-        <p>A shared board for an unprogrammed summer — bikes, pools, camp, music, sleepovers, and whatever else the crew gets into.</p>
-      </div>
-      <div class="landing-slide" data-slide="2">
-        <h1>Offers &amp; asks, not group texts</h1>
-        <p><b>🤝 Can help / host</b> · <b>🙏 Need help</b> · <b>🏊 Kid going to</b> · <b>🚫 Kid busy</b>. Tap any of someone else's to respond.</p>
-      </div>
-      <div class="landing-slide" data-slide="3">
-        <h1>Plus a mom-only chat</h1>
-        <p>Lock plans when they're settled. Group chat for the grown-ups. Daily email digest of who's free and what's on.</p>
+      <button class="landing-arrow landing-arrow-left" onclick="prevLandingSlide()" aria-label="Previous">‹</button>
+      <button class="landing-arrow landing-arrow-right" onclick="nextLandingSlide()" aria-label="Next">›</button>
+      <div class="landing-slides">
+        <div class="landing-slide active" data-slide="1">
+          <h1>Welcome to Lark</h1>
+          <p>A shared board for an unprogrammed summer — bikes, pools, camp, music, sleepovers, and whatever else the crew gets into.</p>
+        </div>
+        <div class="landing-slide" data-slide="2">
+          <h1>Offers &amp; asks, not group texts</h1>
+          <p><b>🤝 Can help / host</b> · <b>🙏 Need help</b> · <b>🏊 Kid going to</b> · <b>🚫 Kid busy</b>. Tap any of someone else's to respond.</p>
+        </div>
+        <div class="landing-slide" data-slide="3">
+          <h1>Plus a mom-only chat</h1>
+          <p>Lock plans when they're settled. Group chat for the grown-ups. Daily email digest of who's free and what's on.</p>
+        </div>
       </div>
       <div class="landing-dots">
         <span class="landing-dot active" data-go="1"></span>
@@ -1232,12 +1252,11 @@
   function showLogin() {
     document.getElementById('login-screen').style.display = 'flex';
     document.querySelector('.app').style.display = 'none';
-    startLandingCarousel();
+    showLandingSlide(1);
   }
 
-  // ==== Landing carousel ====
+  // ==== Landing carousel (manual nav only) ====
   let landingSlide = 1;
-  let landingTimer = null;
   function showLandingSlide(n) {
     const total = document.querySelectorAll('.landing-slide').length;
     landingSlide = ((n - 1 + total) % total) + 1;
@@ -1248,26 +1267,13 @@
       d.classList.toggle('active', Number(d.dataset.go) === landingSlide);
     });
   }
-  function startLandingCarousel() {
-    if (landingTimer) clearInterval(landingTimer);
-    landingTimer = setInterval(() => showLandingSlide(landingSlide + 1), 5000);
-  }
-  function stopLandingCarousel() {
-    if (landingTimer) { clearInterval(landingTimer); landingTimer = null; }
-  }
-  // Wire dots + pause-on-hover
+  window.nextLandingSlide = function() { showLandingSlide(landingSlide + 1); };
+  window.prevLandingSlide = function() { showLandingSlide(landingSlide - 1); };
+  // Dots are also clickable
   document.addEventListener('click', e => {
     if (e.target.classList && e.target.classList.contains('landing-dot')) {
-      stopLandingCarousel();
       showLandingSlide(Number(e.target.dataset.go));
-      startLandingCarousel();
     }
-  });
-  document.addEventListener('mouseover', e => {
-    if (e.target.closest && e.target.closest('.landing-carousel')) stopLandingCarousel();
-  });
-  document.addEventListener('mouseout', e => {
-    if (e.target.closest && e.target.closest('.landing-carousel') && !e.relatedTarget?.closest?.('.landing-carousel')) startLandingCarousel();
   });
 
   async function bootSignedIn(session) {
