@@ -690,6 +690,25 @@
     font-size: 12px; color: var(--muted);
     font-weight: 300; margin-top: 12px;
   }
+  .login-card input[type="password"] {
+    padding: 12px 16px; font-size: 15px;
+    border: 2px solid var(--border); border-radius: 999px;
+    background: white; text-align: center;
+  }
+  .login-card input[type="password"]:focus {
+    outline: none; border-color: var(--primary);
+  }
+  .login-links {
+    margin-top: 14px; font-size: 13px;
+    color: var(--muted); display: flex;
+    justify-content: center; gap: 6px; flex-wrap: wrap;
+  }
+  .login-links a {
+    color: var(--primary); font-weight: 500;
+    text-decoration: none;
+  }
+  .login-links a:hover { text-decoration: underline; }
+  .login-sep { color: var(--muted); }
 
   /* Finalized / locked entries */
   .entry-pill.finalized {
@@ -825,12 +844,17 @@
     </div>
 
     <!-- Sign-in -->
-    <form id="login-form" onsubmit="sendMagicLink(event)">
+    <form id="login-form" onsubmit="signInPassword(event)">
       <input type="email" id="login-email" placeholder="you@example.com" required autocomplete="email">
-      <button type="submit" class="primary">Send sign-in link</button>
+      <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password">
+      <button type="submit" class="primary">Sign in</button>
     </form>
     <p id="login-status" class="login-status"></p>
-    <p class="login-fine">Check spam if you don't see the email. The link works on any device.</p>
+    <div class="login-links">
+      <a href="#" onclick="forgotPassword(event)">Forgot password?</a>
+      <span class="login-sep">·</span>
+      <a href="#" onclick="firstTimeMagic(event)">First time? Use sign-in link</a>
+    </div>
   </div>
 </div>
 
@@ -947,11 +971,34 @@
   <div class="modal">
     <button class="modal-close" onclick="closeSettingsModal()">×</button>
     <h2>Settings</h2>
-    <p class="sub">Account &amp; sync.</p>
+    <p class="sub">Your profile, family, sign out.</p>
+
     <div class="field">
       <label>Signed in as</label>
       <p id="storage-status" style="font-size:14px; color:var(--ink);">—</p>
     </div>
+    <div class="field">
+      <label>Your name</label>
+      <input type="text" id="settings-name" placeholder="e.g., Carolyn Borntrager" maxlength="60">
+    </div>
+    <div class="field">
+      <label>Phone (optional)</label>
+      <input type="tel" id="settings-phone" placeholder="e.g., 614-555-0123" maxlength="30">
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top: 4px;">
+      <button class="primary" onclick="saveSettingsProfile()">Save profile</button>
+      <button class="ghost" onclick="openSetPasswordModal(true)">Change password</button>
+    </div>
+
+    <hr style="border:none; border-top:1.5px dashed var(--border); margin:18px 0;">
+
+    <div class="field">
+      <label>Your family</label>
+      <div id="settings-family-info" style="font-size:14px; color:var(--ink); padding:8px 0;">—</div>
+    </div>
+
+    <hr style="border:none; border-top:1.5px dashed var(--border); margin:18px 0;">
+
     <div class="field">
       <label>Storage</label>
       <p style="font-size:13px; color:var(--muted);">✅ Live syncing via Supabase. All signed-in parents see the same data.</p>
@@ -960,6 +1007,45 @@
       <button class="ghost" onclick="exportData()">Export data (JSON backup)</button>
       <button class="primary" onclick="signOut()">Sign out</button>
     </div>
+  </div>
+</div>
+
+<!-- Set / Reset Password Modal -->
+<div class="modal-overlay" id="set-password-modal">
+  <div class="modal">
+    <h2 id="set-password-title">🔑 Set your password</h2>
+    <p class="sub" id="set-password-sub">Pick a password you'll use to sign in next time.</p>
+    <div class="field">
+      <label>New password (8+ characters)</label>
+      <input type="password" id="set-password-input" placeholder="••••••••" minlength="8" autocomplete="new-password">
+    </div>
+    <div class="field">
+      <label>Confirm password</label>
+      <input type="password" id="set-password-confirm" placeholder="••••••••" minlength="8" autocomplete="new-password">
+    </div>
+    <button class="primary" onclick="savePassword()" style="width:100%;">Save password &amp; continue</button>
+    <p id="set-password-status" style="font-size:13px; color:var(--muted); margin-top:10px; text-align:center;"></p>
+  </div>
+</div>
+
+<!-- User Profile Setup (per-person: name + phone) -->
+<div class="modal-overlay" id="user-profile-modal">
+  <div class="modal">
+    <h2>👋 You first</h2>
+    <p class="sub">Quick — tell us who you are. (Email auto-pulled from sign-in.)</p>
+    <div class="field">
+      <label>Your name</label>
+      <input type="text" id="profile-user-name" placeholder="e.g., Carolyn Borntrager" maxlength="60" autocomplete="name">
+    </div>
+    <div class="field">
+      <label>Phone (optional — for future text alerts)</label>
+      <input type="tel" id="profile-user-phone" placeholder="e.g., 614-555-0123" maxlength="30" autocomplete="tel">
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <p id="profile-user-email" style="font-size:14px;color:var(--muted);margin-top:4px;">—</p>
+    </div>
+    <button class="primary" onclick="saveUserProfile()" style="width:100%;">Continue</button>
   </div>
 </div>
 
@@ -1113,6 +1199,7 @@
   let viewFilter = localStorage.getItem('viewFilter') || 'all';
   let entries = {};
   let chatMessages = {};
+  let currentProfile = null;  // current user's profile row
   let sb = null;            // Supabase client
   let currentUser = null;   // signed-in user
   let realtimeChans = [];
@@ -1133,6 +1220,7 @@
     sb.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session)  bootSignedIn(session);
       if (event === 'SIGNED_OUT')            showLogin();
+      if (event === 'PASSWORD_RECOVERY')     openSetPasswordModal(true);
     });
 
     // Check for existing session
@@ -1212,23 +1300,50 @@
     renderLegend();
     renderWelcomeFamilyPicker();
 
-    if (!loggedInFamily) {
-      // First-time experience: show onboarding tour, then profile setup
-      if (!localStorage.getItem('larkOnboardingSeen')) {
-        showOnboarding();
-      } else {
-        openWelcomeModal();
-      }
+    // Decide what setup screens to show, in order:
+    //   1. Set password (first-ever sign-in via invite/magic link)
+    //   2. Onboarding tour (first-ever sign-in)
+    //   3. Profile (parent name + phone) — if no profile row yet
+    //   4. Family (family name + kid name + color) — if no familyId yet
+    const needsPassword = !currentUser.user_metadata?.passwordSet;
+    const needsOnboarding = !localStorage.getItem('larkOnboardingSeen');
+    const needsProfile = !currentProfile;
+    const needsFamily = !loggedInFamily;
+    if (needsPassword) {
+      openSetPasswordModal(false);
+    } else if (needsOnboarding) {
+      showOnboarding(); // when finished, will check & open profile/family modals
+    } else if (needsProfile) {
+      openUserProfileModal();
+    } else if (needsFamily) {
+      openWelcomeModal();
     }
     renderCalendar();
     renderChat();
   }
 
-  // Magic-link sign in
-  window.sendMagicLink = async function(ev) {
+  // ==== Auth: email + password ====
+  window.signInPassword = async function(ev) {
+    ev.preventDefault();
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const status = document.getElementById('login-status');
+    status.textContent = 'Signing in...';
+    status.classList.remove('error');
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) {
+      status.textContent = 'Hmm — ' + error.message;
+      status.classList.add('error');
+    }
+    // success path is handled via onAuthStateChange → bootSignedIn
+  };
+
+  // First-time link (or fallback if user forgot password) — sends magic link
+  window.firstTimeMagic = async function(ev) {
     ev.preventDefault();
     const email = document.getElementById('login-email').value.trim();
     const status = document.getElementById('login-status');
+    if (!email) { status.textContent = 'Enter your email above first.'; status.classList.add('error'); return; }
     status.textContent = 'Sending sign-in link...';
     status.classList.remove('error');
     const { error } = await sb.auth.signInWithOtp({
@@ -1239,9 +1354,62 @@
       status.textContent = 'Hmm — ' + error.message;
       status.classList.add('error');
     } else {
-      status.textContent = '✓ Check your email for a sign-in link from Supabase.';
-      document.getElementById('login-form').style.display = 'none';
+      status.textContent = '✓ Check your email for a one-time sign-in link.';
     }
+  };
+
+  // Forgot password — sends a password reset email
+  window.forgotPassword = async function(ev) {
+    ev.preventDefault();
+    const email = document.getElementById('login-email').value.trim();
+    const status = document.getElementById('login-status');
+    if (!email) { status.textContent = 'Enter your email above first.'; status.classList.add('error'); return; }
+    status.textContent = 'Sending password reset...';
+    status.classList.remove('error');
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + window.location.pathname
+    });
+    if (error) {
+      status.textContent = 'Hmm — ' + error.message;
+      status.classList.add('error');
+    } else {
+      status.textContent = '✓ Check your email for a password reset link.';
+    }
+  };
+
+  // Set / reset password modal
+  function openSetPasswordModal(isReset = false) {
+    document.getElementById('set-password-title').textContent = isReset ? '🔑 Reset your password' : '🔑 Set your password';
+    document.getElementById('set-password-sub').textContent = isReset
+      ? 'Pick a new password.'
+      : 'Pick a password you\'ll use to sign in next time. No more emailed links.';
+    document.getElementById('set-password-input').value = '';
+    document.getElementById('set-password-confirm').value = '';
+    document.getElementById('set-password-status').textContent = '';
+    document.getElementById('set-password-modal').classList.add('open');
+  }
+  function closeSetPasswordModal() {
+    document.getElementById('set-password-modal').classList.remove('open');
+  }
+  window.savePassword = async function() {
+    const pw = document.getElementById('set-password-input').value;
+    const confirm = document.getElementById('set-password-confirm').value;
+    const status = document.getElementById('set-password-status');
+    if (pw.length < 8) { status.textContent = 'Password must be at least 8 characters.'; return; }
+    if (pw !== confirm) { status.textContent = 'Passwords don\'t match.'; return; }
+    status.textContent = 'Saving...';
+    const { error } = await sb.auth.updateUser({
+      password: pw,
+      data: { passwordSet: true }
+    });
+    if (error) { status.textContent = 'Could not save: ' + error.message; return; }
+    // Refresh currentUser metadata
+    const { data: { user } } = await sb.auth.getUser();
+    currentUser = user;
+    closeSetPasswordModal();
+    // Continue setup chain
+    if (!currentProfile) openUserProfileModal();
+    else if (!loggedInFamily) openWelcomeModal();
   };
 
   window.signOut = async function() {
@@ -1249,13 +1417,21 @@
     location.reload();
   };
 
-  // Save the family choice to user_metadata once selected, so any device they sign in from gets it
+  // Save the family choice to user_metadata AND to the profile row
   async function persistFamilyChoice() {
     if (!sb || !currentUser || !loggedInFamily) return;
     try {
       await sb.auth.updateUser({ data: { familyId: loggedInFamily } });
     } catch (e) {
-      console.warn('Could not persist family choice', e);
+      console.warn('Could not persist family choice to user metadata', e);
+    }
+    if (currentProfile) {
+      try {
+        await sb.from('profiles').update({ family_id: loggedInFamily }).eq('id', currentUser.id);
+        currentProfile.family_id = loggedInFamily;
+      } catch (e) {
+        console.warn('Could not update profile family_id', e);
+      }
     }
   }
 
@@ -1263,20 +1439,24 @@
     const [
       { data: ents, error: entsErr },
       { data: msgs, error: msgsErr },
-      { data: fams, error: famsErr }
+      { data: fams, error: famsErr },
+      { data: prof, error: profErr }
     ] = await Promise.all([
       sb.from('entries').select('*'),
       sb.from('messages').select('*').order('created_at', { ascending: true }),
-      sb.from('families').select('*').order('created_at', { ascending: true })
+      sb.from('families').select('*').order('created_at', { ascending: true }),
+      sb.from('profiles').select('*').eq('id', currentUser.id).maybeSingle()
     ]);
     if (entsErr) console.error('entries load', entsErr);
     if (msgsErr) console.error('messages load', msgsErr);
     if (famsErr) console.error('families load', famsErr);
+    if (profErr) console.error('profile load', profErr);
     entries = {};
     (ents || []).forEach(r => { entries[r.id] = rowToEntry(r); });
     chatMessages = {};
     (msgs || []).forEach(r => { chatMessages[r.id] = rowToMessage(r); });
     FAMILIES = (fams || []).map(rowToFamily);
+    currentProfile = prof || null;
   }
 
   function subscribeRealtime() {
@@ -1595,6 +1775,11 @@
     loggedInFamily = id;
     localStorage.setItem('loggedInFamily', id);
     await persistFamilyChoice();
+    // Also update the user's profile row with the new family_id
+    if (currentProfile) {
+      await sb.from('profiles').update({ family_id: id }).eq('id', currentUser.id);
+      currentProfile.family_id = id;
+    }
     // Realtime will push the new row, but populate immediately for snappy UX
     FAMILIES.push(newFam);
     populateLoggedInSelector();
@@ -1952,6 +2137,26 @@
   window.openSettingsModal = function() {
     document.getElementById('storage-status').textContent =
       currentUser ? currentUser.email : '(not signed in)';
+    document.getElementById('settings-name').value = currentProfile?.name || '';
+    document.getElementById('settings-phone').value = currentProfile?.phone || '';
+    // Family info
+    const fam = FAMILIES.find(f => f.id === loggedInFamily);
+    const famInfoEl = document.getElementById('settings-family-info');
+    if (fam) {
+      famInfoEl.innerHTML = `
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:18px; height:18px; border-radius:50%; background:${fam.color}; border:2px solid var(--ink);"></div>
+          <div>
+            <div style="font-weight:500;">${escapeHtml(fam.name)} family</div>
+            ${fam.kid ? `<div style="font-size:13px; color:var(--muted);">Kid: ${escapeHtml(fam.kid)}</div>` : ''}
+          </div>
+        </div>
+        <p style="font-size:12px; color:var(--muted); margin-top:8px;">
+          To change your family or kid name, ask one of the other moms — or contact Carolyn.
+        </p>`;
+    } else {
+      famInfoEl.innerHTML = '<p style="font-size:13px; color:var(--muted);">No family set yet.</p>';
+    }
     document.getElementById('settings-modal').classList.add('open');
   };
   window.closeSettingsModal = function() {
@@ -1972,6 +2177,55 @@
   // ==== Welcome modal ====
   function openWelcomeModal() { document.getElementById('welcome-modal').classList.add('open'); }
   function closeWelcomeModal() { document.getElementById('welcome-modal').classList.remove('open'); }
+
+  // ==== User profile modal ====
+  function openUserProfileModal() {
+    document.getElementById('profile-user-email').textContent = currentUser?.email || '—';
+    if (currentProfile) {
+      document.getElementById('profile-user-name').value = currentProfile.name || '';
+      document.getElementById('profile-user-phone').value = currentProfile.phone || '';
+    }
+    document.getElementById('user-profile-modal').classList.add('open');
+  }
+  function closeUserProfileModal() {
+    document.getElementById('user-profile-modal').classList.remove('open');
+  }
+  window.saveUserProfile = async function() {
+    const name = document.getElementById('profile-user-name').value.trim();
+    const phone = document.getElementById('profile-user-phone').value.trim() || null;
+    if (!name) { alert('Please enter your name.'); return; }
+    if (!sb || !currentUser) { alert('Not signed in.'); return; }
+    const row = {
+      id: currentUser.id,
+      email: currentUser.email,
+      name,
+      phone,
+      family_id: loggedInFamily || null
+    };
+    const { error } = await sb.from('profiles').upsert(row, { onConflict: 'id' });
+    if (error) { alert('Could not save profile: ' + error.message); return; }
+    currentProfile = row;
+    closeUserProfileModal();
+    // Continue setup: if no family yet, open the family setup modal
+    if (!loggedInFamily) openWelcomeModal();
+  };
+
+  window.saveSettingsProfile = async function() {
+    const name = document.getElementById('settings-name').value.trim();
+    const phone = document.getElementById('settings-phone').value.trim() || null;
+    if (!name) { alert('Name can\'t be blank.'); return; }
+    const row = {
+      id: currentUser.id,
+      email: currentUser.email,
+      name,
+      phone,
+      family_id: loggedInFamily || null
+    };
+    const { error } = await sb.from('profiles').upsert(row, { onConflict: 'id' });
+    if (error) { alert('Could not save: ' + error.message); return; }
+    currentProfile = row;
+    alert('Profile saved.');
+  };
 
   // ==== Onboarding tour ====
   let onboardStep = 1;
@@ -2000,9 +2254,10 @@
     if (onboardStep < ONBOARD_STEPS) {
       showOnboardStep(onboardStep + 1);
     } else {
-      // Last step — finish: close onboarding, then open profile setup if needed
+      // Last step — finish: close onboarding, then chain into profile + family setup
       closeOnboarding();
-      if (!loggedInFamily) openWelcomeModal();
+      if (!currentProfile) openUserProfileModal();
+      else if (!loggedInFamily) openWelcomeModal();
     }
   };
   // Make dots clickable to jump
