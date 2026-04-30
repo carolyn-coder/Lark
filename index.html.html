@@ -1029,9 +1029,27 @@
 
     <hr style="border:none; border-top:1.5px dashed var(--border); margin:18px 0;">
 
-    <div class="field">
-      <label>Your family</label>
-      <div id="settings-family-info" style="font-size:14px; color:var(--ink); padding:8px 0;">—</div>
+    <h3 style="font-size:14px; font-weight:500; color:var(--primary); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;">Your family</h3>
+    <div id="settings-no-family" style="display:none; font-size:13px; color:var(--muted); padding:8px 0;">
+      No family set up yet. Close settings and pick or create one when prompted.
+    </div>
+    <div id="settings-family-fields">
+      <div class="field">
+        <label>Family / last name</label>
+        <input type="text" id="settings-family-name" placeholder="e.g., Borntrager" maxlength="40">
+      </div>
+      <div class="field">
+        <label>Kid's name</label>
+        <input type="text" id="settings-kid-name" placeholder="e.g., Randi" maxlength="40">
+      </div>
+      <div class="field">
+        <label>Family color</label>
+        <div class="color-picker" id="settings-color-picker"></div>
+      </div>
+      <button class="primary" onclick="saveSettingsFamily()">Save family</button>
+      <p style="font-size:12px; color:var(--muted); margin-top:8px;">
+        Heads up — changes here update what every parent in your family sees.
+      </p>
     </div>
 
     <hr style="border:none; border-top:1.5px dashed var(--border); margin:18px 0;">
@@ -2157,30 +2175,67 @@
   };
 
   // ==== Settings modal ====
+  let selectedSettingsColor = null;
   window.openSettingsModal = function() {
     document.getElementById('storage-status').textContent =
       currentUser ? currentUser.email : '(not signed in)';
     document.getElementById('settings-name').value = currentProfile?.name || '';
     document.getElementById('settings-phone').value = currentProfile?.phone || '';
-    // Family info
+
     const fam = FAMILIES.find(f => f.id === loggedInFamily);
-    const famInfoEl = document.getElementById('settings-family-info');
-    if (fam) {
-      famInfoEl.innerHTML = `
-        <div style="display:flex; align-items:center; gap:10px;">
-          <div style="width:18px; height:18px; border-radius:50%; background:${fam.color}; border:2px solid var(--ink);"></div>
-          <div>
-            <div style="font-weight:500;">${escapeHtml(fam.name)} family</div>
-            ${fam.kid ? `<div style="font-size:13px; color:var(--muted);">Kid: ${escapeHtml(fam.kid)}</div>` : ''}
-          </div>
-        </div>
-        <p style="font-size:12px; color:var(--muted); margin-top:8px;">
-          To change your family or kid name, ask one of the other moms — or contact Carolyn.
-        </p>`;
+    const noFamEl = document.getElementById('settings-no-family');
+    const fieldsEl = document.getElementById('settings-family-fields');
+    if (!fam) {
+      noFamEl.style.display = 'block';
+      fieldsEl.style.display = 'none';
     } else {
-      famInfoEl.innerHTML = '<p style="font-size:13px; color:var(--muted);">No family set yet.</p>';
+      noFamEl.style.display = 'none';
+      fieldsEl.style.display = 'block';
+      document.getElementById('settings-family-name').value = fam.name || '';
+      document.getElementById('settings-kid-name').value = fam.kid || '';
+      selectedSettingsColor = fam.color || FAMILY_COLOR_OPTIONS[0];
+      renderSettingsColorPicker();
     }
     document.getElementById('settings-modal').classList.add('open');
+  };
+
+  function renderSettingsColorPicker() {
+    const cp = document.getElementById('settings-color-picker');
+    if (!cp) return;
+    // Colors used by OTHER families (not yours) — to dim/disable them
+    const used = new Set(
+      FAMILIES.filter(f => f.id !== loggedInFamily).map(f => f.color.toLowerCase())
+    );
+    cp.innerHTML = FAMILY_COLOR_OPTIONS.map(c => {
+      const isUsed = used.has(c.toLowerCase());
+      const sel = (c === selectedSettingsColor) ? ' selected' : '';
+      return `<div class="color-swatch${sel}" data-color="${c}" style="background:${c}; ${isUsed ? 'opacity:0.35;' : ''}" title="${isUsed ? 'used by another family' : ''}"></div>`;
+    }).join('');
+    cp.querySelectorAll('.color-swatch').forEach(sw => {
+      sw.onclick = () => {
+        selectedSettingsColor = sw.dataset.color;
+        cp.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+        sw.classList.add('selected');
+      };
+    });
+  }
+
+  window.saveSettingsFamily = async function() {
+    if (!loggedInFamily) { alert('No family selected.'); return; }
+    const name = document.getElementById('settings-family-name').value.trim();
+    const kid  = document.getElementById('settings-kid-name').value.trim() || null;
+    if (!name) { alert('Family / last name can\'t be blank.'); return; }
+    const updates = { name, kid, color: selectedSettingsColor };
+    const { error } = await sb.from('families').update(updates).eq('id', loggedInFamily);
+    if (error) { alert('Could not save family: ' + error.message); return; }
+    // Update local FAMILIES so UI re-renders without waiting for realtime
+    const fam = FAMILIES.find(f => f.id === loggedInFamily);
+    if (fam) Object.assign(fam, updates);
+    populateLoggedInSelector();
+    populateViewFilter();
+    renderLegend();
+    renderCalendar();
+    alert('Family saved.');
   };
   window.closeSettingsModal = function() {
     document.getElementById('settings-modal').classList.remove('open');
