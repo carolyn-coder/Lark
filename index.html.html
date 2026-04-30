@@ -266,12 +266,19 @@
   }
   .app { position: relative; z-index: 1; padding: 28px 20px; max-width: 1180px; }
   h1 {
-    font-size: 32px; font-weight: 500; color: var(--ink);
-    letter-spacing: -0.01em; line-height: 1.15;
+    font-size: 46px; font-weight: 700; color: var(--ink);
+    letter-spacing: -0.02em; line-height: 1.0;
   }
   h1 span.sub {
-    font-size: 13px; font-weight: 300; color: var(--muted);
-    margin-left: 10px; display: inline-block;
+    font-family: 'Fredoka', sans-serif !important;
+    font-style: normal !important;
+    font-size: 13px; font-weight: 400; color: var(--muted);
+    margin-left: 12px; display: inline-block;
+    letter-spacing: 0;
+  }
+  @media (max-width: 640px) {
+    h1 { font-size: 32px; }
+    h1 span.sub { display: block; margin-left: 0; margin-top: 6px; }
   }
   header { margin-bottom: 20px; }
   .controls {
@@ -447,6 +454,20 @@
   }
 
   .family-picker { gap: 12px; }
+  .color-picker {
+    display: flex; gap: 10px; flex-wrap: wrap; padding: 6px 0;
+  }
+  .color-swatch {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 3px solid transparent; cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .color-swatch:hover { transform: translateY(-2px); }
+  .color-swatch.selected {
+    border-color: var(--ink);
+    transform: scale(1.1);
+    box-shadow: 0 0 0 2px var(--card);
+  }
   .family-btn {
     padding: 18px 16px; border-radius: 18px; border-width: 3px;
     font-size: 16px; font-weight: 500;
@@ -784,13 +805,38 @@
   </div>
 </div>
 
-<!-- Welcome Modal -->
+<!-- Welcome / Profile Setup Modal -->
 <div class="modal-overlay" id="welcome-modal">
   <div class="modal">
     <h2>👋 Welcome to Lark</h2>
-    <p class="sub">A shared summer for Lillian, Harper, Randi &amp; Kat. Which family are you?</p>
-    <div class="family-picker" id="welcome-families"></div>
-    <p style="font-size:12px;color:#9ca3af;margin-top:8px;">You can change this later using the dropdown at the top.</p>
+    <p class="sub" id="welcome-sub">Set up your family profile.</p>
+
+    <!-- "Join existing family" panel — shown only if there are already other families -->
+    <div id="welcome-join" style="display:none; margin-bottom: 16px;">
+      <div class="field">
+        <label>Already a family in here? Pick yours:</label>
+        <div class="family-picker" id="welcome-families"></div>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin:6px 0 14px;">
+        Or set up a new family below.
+      </p>
+      <hr style="border:none; border-top:1.5px dashed var(--border); margin:14px 0;">
+    </div>
+
+    <!-- Profile setup form -->
+    <div class="field">
+      <label>Family / last name</label>
+      <input type="text" id="profile-family-name" placeholder="e.g., Borntrager" maxlength="40" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Kid's name (the one in the friend group)</label>
+      <input type="text" id="profile-kid-name" placeholder="e.g., Randi" maxlength="40" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Pick a color</label>
+      <div class="color-picker" id="profile-color-picker"></div>
+    </div>
+    <button class="primary" onclick="saveProfile()" style="width:100%;">Create family</button>
   </div>
 </div>
 
@@ -808,11 +854,18 @@
   // ==============================================================
 
   // ==== Config — edit these to match your group ====
-  const FAMILIES = [
-    { id: 'borntrager', name: 'Borntrager', kid: 'Randi',   color: '#ea7c3e' }, /* orange */
-    { id: 'waldo',      name: 'Waldo',      kid: 'Lillian', color: '#8fa476' }, /* sage */
-    { id: 'hanna',      name: 'Hanna',      kid: 'Harper',  color: '#c44a3f' }, /* coral red */
-    { id: 'nuber',      name: 'Nuber',      kid: 'Kat',     color: '#1e3a52' }  /* navy */
+  // Families are loaded from the database. Each parent creates their own family on first sign-in.
+  let FAMILIES = [];
+  // Color palette parents can pick from when creating their family
+  const FAMILY_COLOR_OPTIONS = [
+    '#ea7c3e', /* orange */
+    '#8fa476', /* sage */
+    '#c44a3f', /* coral red */
+    '#1e3a52', /* navy */
+    '#d4a93a', /* mustard */
+    '#a35792', /* plum */
+    '#3b8c8c', /* teal */
+    '#7a4f2d'  /* terracotta */
   ];
 
   const LOCATIONS = [
@@ -884,16 +937,25 @@
     document.getElementById('login-screen').style.display = 'none';
     document.querySelector('.app').style.display = '';
 
-    populateLoggedInSelector();
-    populateViewFilter();
+    // UI that doesn't depend on FAMILIES — render first
     populateLocationSelect();
-    renderLegend();
     renderMonthTabs();
-    renderWelcomeFamilyPicker();
     wireRecurrenceToggle();
 
+    // Load data, THEN render UI that depends on FAMILIES
     await loadAll();
     subscribeRealtime();
+
+    // If the previously-stored familyId no longer exists in the DB, clear it
+    if (loggedInFamily && !FAMILIES.some(f => f.id === loggedInFamily)) {
+      loggedInFamily = null;
+      localStorage.removeItem('loggedInFamily');
+    }
+
+    populateLoggedInSelector();
+    populateViewFilter();
+    renderLegend();
+    renderWelcomeFamilyPicker();
 
     if (!loggedInFamily) openWelcomeModal();
     renderCalendar();
@@ -936,16 +998,23 @@
   }
 
   async function loadAll() {
-    const [{ data: ents, error: entsErr }, { data: msgs, error: msgsErr }] = await Promise.all([
+    const [
+      { data: ents, error: entsErr },
+      { data: msgs, error: msgsErr },
+      { data: fams, error: famsErr }
+    ] = await Promise.all([
       sb.from('entries').select('*'),
-      sb.from('messages').select('*').order('created_at', { ascending: true })
+      sb.from('messages').select('*').order('created_at', { ascending: true }),
+      sb.from('families').select('*').order('created_at', { ascending: true })
     ]);
     if (entsErr) console.error('entries load', entsErr);
     if (msgsErr) console.error('messages load', msgsErr);
+    if (famsErr) console.error('families load', famsErr);
     entries = {};
     (ents || []).forEach(r => { entries[r.id] = rowToEntry(r); });
     chatMessages = {};
     (msgs || []).forEach(r => { chatMessages[r.id] = rowToMessage(r); });
+    FAMILIES = (fams || []).map(rowToFamily);
   }
 
   function subscribeRealtime() {
@@ -965,7 +1034,18 @@
         renderChat();
       })
       .subscribe();
-    realtimeChans.push(entriesChan, msgsChan);
+    const famsChan = sb.channel('families-rt')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'families' }, async () => {
+        await loadAll();
+        populateLoggedInSelector();
+        populateViewFilter();
+        renderLegend();
+        renderCalendar();
+        const dayMod = document.getElementById('day-modal');
+        if (dayMod.classList.contains('open')) renderEntriesList(dayMod.dataset.date);
+      })
+      .subscribe();
+    realtimeChans.push(entriesChan, msgsChan, famsChan);
   }
 
   // ==== Snake_case (DB) <-> camelCase (JS) ====
@@ -1007,6 +1087,23 @@
       familyId: r.family_id,
       text: r.text,
       createdAt: r.created_at ? new Date(r.created_at).getTime() : Date.now()
+    };
+  }
+  function rowToFamily(r) {
+    return {
+      id: r.id,
+      name: r.name || '',
+      kid: r.kid || '',
+      color: r.color || '#1e3a52'
+    };
+  }
+  function familyToRow(f) {
+    return {
+      id: f.id,
+      name: f.name || '',
+      kid: f.kid || null,
+      color: f.color || '#1e3a52',
+      created_by: currentUser?.id || null
     };
   }
 
@@ -1177,22 +1274,74 @@
       `<div class="legend-item"><div class="legend-swatch" style="background:${f.color}"></div>${displayName(f)}</div>`
     ).join('');
   }
+  let selectedProfileColor = FAMILY_COLOR_OPTIONS[0];
+
   function renderWelcomeFamilyPicker() {
-    const el = document.getElementById('welcome-families');
-    el.innerHTML = FAMILIES.map(f =>
-      `<button class="family-btn" style="border-color:${f.color};color:${f.color}" data-fid="${f.id}">${displayName(f)}</button>`
-    ).join('');
-    el.querySelectorAll('button').forEach(b => {
-      b.onclick = () => {
-        loggedInFamily = b.dataset.fid;
-        localStorage.setItem('loggedInFamily', loggedInFamily);
-        document.getElementById('who-am-i').value = loggedInFamily;
-        updateLoggedInNames();
-        persistFamilyChoice();
-        closeWelcomeModal();
-      };
-    });
+    // Show "Join existing" panel only if there are other families already.
+    const joinPanel = document.getElementById('welcome-join');
+    if (FAMILIES.length > 0) {
+      joinPanel.style.display = 'block';
+      const el = document.getElementById('welcome-families');
+      el.innerHTML = FAMILIES.map(f =>
+        `<button class="family-btn" style="border-color:${f.color};color:${f.color}" data-fid="${f.id}">${escapeHtml(displayName(f))}</button>`
+      ).join('');
+      el.querySelectorAll('button').forEach(b => {
+        b.onclick = () => {
+          loggedInFamily = b.dataset.fid;
+          localStorage.setItem('loggedInFamily', loggedInFamily);
+          document.getElementById('who-am-i').value = loggedInFamily;
+          updateLoggedInNames();
+          persistFamilyChoice();
+          closeWelcomeModal();
+        };
+      });
+    } else {
+      joinPanel.style.display = 'none';
+    }
+    // Render color swatches
+    const cp = document.getElementById('profile-color-picker');
+    if (cp) {
+      // Avoid colors already used by existing families
+      const used = new Set(FAMILIES.map(f => f.color.toLowerCase()));
+      const palette = FAMILY_COLOR_OPTIONS;
+      const firstUnused = palette.find(c => !used.has(c.toLowerCase())) || palette[0];
+      selectedProfileColor = firstUnused;
+      cp.innerHTML = palette.map(c => {
+        const isUsed = used.has(c.toLowerCase());
+        const sel = (c === selectedProfileColor) ? ' selected' : '';
+        return `<div class="color-swatch${sel}" data-color="${c}" style="background:${c}; ${isUsed ? 'opacity:0.35;' : ''}" title="${isUsed ? 'already used by another family' : ''}"></div>`;
+      }).join('');
+      cp.querySelectorAll('.color-swatch').forEach(sw => {
+        sw.onclick = () => {
+          selectedProfileColor = sw.dataset.color;
+          cp.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+          sw.classList.add('selected');
+        };
+      });
+    }
   }
+
+  window.saveProfile = async function() {
+    const fname = document.getElementById('profile-family-name').value.trim();
+    const kname = document.getElementById('profile-kid-name').value.trim();
+    if (!fname) { alert('Please enter a family / last name.'); return; }
+    if (!sb || !currentUser) { alert('Not signed in.'); return; }
+    const id = makeId();
+    const newFam = { id, name: fname, kid: kname || null, color: selectedProfileColor };
+    const { error } = await sb.from('families').insert(familyToRow(newFam));
+    if (error) { alert('Could not create family: ' + error.message); return; }
+    loggedInFamily = id;
+    localStorage.setItem('loggedInFamily', id);
+    await persistFamilyChoice();
+    // Realtime will push the new row, but populate immediately for snappy UX
+    FAMILIES.push(newFam);
+    populateLoggedInSelector();
+    populateViewFilter();
+    renderLegend();
+    document.getElementById('who-am-i').value = id;
+    updateLoggedInNames();
+    closeWelcomeModal();
+  };
   function renderMonthTabs() {
     const el = document.getElementById('month-tabs');
     el.innerHTML = MONTHS.map(m =>
