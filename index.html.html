@@ -4,9 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lark — Summer 2026</title>
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">☀️</text></svg>' />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,700;1,500;1,700&family=Fredoka:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -204,20 +205,23 @@
      Playful summer palette — lilac + yellow + pink blobs
      =================================================== */
   :root {
-    --bg: #f3e8ff;
-    --yellow: #fde047;
-    --pink: #fbcfe8;
-    --mint: #a7f3d0;
-    --mint-bright: #6ee7b7;
-    --mint-deep: #047857;
-    --primary: #9333ea;
-    --primary-dark: #6b21a8;
-    --primary-hover: #a855f7;
-    --ink: #2d1b4e;
-    --muted: #6b5b8a;
-    --border: #e9d5ff;
-    --success: #10b981;
-    --success-bg: #ecfdf5;
+    --bg: #f4a3a4;        /* coral pink */
+    --bg-deep: #ed8a8c;
+    --yellow: #d4a93a;    /* mustard */
+    --pink: #efb1ad;
+    --mint: #a8b890;      /* sage */
+    --mint-bright: #8fa476;
+    --mint-deep: #4d5e3c;
+    --orange: #ea7c3e;
+    --primary: #1e3a52;   /* deep navy */
+    --primary-dark: #0f2236;
+    --primary-hover: #2d4d68;
+    --ink: #1a2638;       /* near-navy text */
+    --muted: #6a5e52;     /* warm taupe */
+    --border: #e8d8b8;    /* cream/sand border */
+    --card: #fdf3df;      /* cream card */
+    --success: #4d5e3c;
+    --success-bg: #ebead0;
   }
   body {
     font-family: 'Fredoka', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -226,6 +230,11 @@
     color: var(--ink);
     position: relative;
     overflow-x: hidden;
+  }
+  h1, h2, h3, .login-mark, .modal h2, .chat-header h2 {
+    font-family: 'Fraunces', Georgia, serif !important;
+    font-style: italic;
+    letter-spacing: -0.01em;
   }
   /* Mint accent blob */
   .blob-mint {
@@ -251,9 +260,9 @@
   body::after {
     content: ''; position: fixed; bottom: -20%; left: -15%;
     width: 42vw; height: 42vw;
-    background: var(--pink);
+    background: var(--orange);
     border-radius: 60% 40% 30% 70% / 50% 60% 40% 50%;
-    z-index: 0; opacity: 0.65; pointer-events: none;
+    z-index: 0; opacity: 0.55; pointer-events: none;
   }
   .app { position: relative; z-index: 1; padding: 28px 20px; max-width: 1180px; }
   h1 {
@@ -266,7 +275,7 @@
   }
   header { margin-bottom: 20px; }
   .controls {
-    background: white; padding: 5px 8px;
+    background: var(--card); padding: 5px 8px;
     border-radius: 999px; border: 2px solid var(--border);
     box-shadow: 0 4px 0 var(--border);
   }
@@ -309,7 +318,7 @@
     background: transparent; border: none; color: var(--primary);
     font-weight: 500;
   }
-  button.ghost:hover { background: rgba(147, 51, 234, 0.08); }
+  button.ghost:hover { background: rgba(30, 58, 82, 0.08); }
 
   .status-banner {
     background: linear-gradient(135deg, #fde047, #facc15);
@@ -321,14 +330,14 @@
 
   .legend { gap: 8px; margin-bottom: 18px; }
   .legend-item {
-    background: white; padding: 5px 12px; border-radius: 999px;
+    background: var(--card); padding: 5px 12px; border-radius: 999px;
     border: 1.5px solid var(--border); font-weight: 400;
     box-shadow: 0 2px 0 var(--border);
   }
   .legend-swatch { border-radius: 50%; width: 12px; height: 12px; }
 
   .month-tabs {
-    background: white; padding: 6px; border-radius: 22px;
+    background: var(--card); padding: 6px; border-radius: 22px;
     border: 2px solid var(--border); box-shadow: 0 4px 0 var(--border);
   }
   .month-tab {
@@ -337,33 +346,35 @@
   }
   .month-tab:not(.active):hover { background: #ecfdf5; color: var(--mint-deep); }
   .month-tab.active {
-    background: var(--primary); color: white;
-    box-shadow: 0 3px 10px rgba(147, 51, 234, 0.35);
+    background: var(--primary); color: var(--card);
+    box-shadow: 0 3px 10px rgba(30, 58, 82, 0.35);
   }
-  .month-tab:not(.active):hover { background: var(--bg); color: var(--ink); }
+  .month-tab:not(.active):hover { background: var(--yellow); color: var(--ink); }
 
   .calendar {
-    background: white; border-radius: 24px; overflow: hidden;
+    background: var(--card); border-radius: 24px; overflow: hidden;
     border: 2px solid var(--border);
-    box-shadow: 0 6px 0 var(--border), 0 18px 50px rgba(147, 51, 234, 0.1);
-    border-top: 3px solid var(--mint-bright);
+    box-shadow: 0 6px 0 var(--border), 0 18px 50px rgba(30, 38, 56, 0.18);
+    border-top: 3px solid var(--orange);
   }
   .calendar-header {
-    background: linear-gradient(135deg, #f3e8ff 0%, #d1fae5 50%, #fef3c7 100%);
+    background: linear-gradient(135deg, var(--bg-deep) 0%, var(--yellow) 50%, var(--mint) 100%);
     border-bottom: 2px solid var(--border);
   }
   .calendar-header div {
     padding: 13px; font-weight: 500; font-size: 11px;
-    color: var(--primary); letter-spacing: 0.12em;
+    color: white; letter-spacing: 0.12em;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.15);
   }
   .day {
-    border-right: 1px solid #f5e6ff; border-bottom: 1px solid #f5e6ff;
+    border-right: 1px solid #ecdfc4; border-bottom: 1px solid #ecdfc4;
+    background: var(--card);
   }
-  .day:hover { background: #faf5ff; }
-  .day.other-month { background: #fbf8ff; color: #d1c4e8; }
-  .day.today { background: linear-gradient(135deg, #fef3c7, #fde68a); }
+  .day:hover { background: #f7e8c4; }
+  .day.other-month { background: #f3e3c0; color: #c0a880; }
+  .day.today { background: linear-gradient(135deg, #ffe5b8, #f8c87a); }
   .day-num { font-weight: 400; font-size: 14px; color: var(--ink); }
-  .day.today .day-num { color: #b45309; font-weight: 500; }
+  .day.today .day-num { color: #8a4d10; font-weight: 500; }
 
   .entry-pill {
     font-size: 11px; padding: 3px 7px; border-radius: 7px;
@@ -372,11 +383,12 @@
 
   /* Modals */
   .modal-overlay {
-    background: rgba(45, 27, 78, 0.5); backdrop-filter: blur(6px);
+    background: rgba(26, 38, 56, 0.55); backdrop-filter: blur(6px);
   }
   .modal {
     border-radius: 28px; padding: 30px;
-    box-shadow: 0 25px 70px rgba(147, 51, 234, 0.28);
+    background: var(--card);
+    box-shadow: 0 25px 70px rgba(26, 38, 56, 0.35);
     border: 2px solid var(--border);
   }
   .modal h2 { font-size: 22px; font-weight: 500; }
@@ -402,10 +414,11 @@
   .delete-btn:hover { background: #fef2f2; }
 
   .new-entry {
-    background: linear-gradient(135deg, #faf5ff 0%, #fef3c7 100%);
+    background: linear-gradient(135deg, var(--pink) 0%, var(--yellow) 100%);
     padding: 20px; border-radius: 20px;
     border: 2px dashed var(--border);
   }
+  .new-entry h3 { color: var(--ink) !important; }
   .new-entry h3 {
     font-size: 15px; font-weight: 500; color: var(--ink); margin-bottom: 14px;
   }
@@ -477,19 +490,20 @@
     padding: 20px; background: var(--bg);
   }
   .login-card {
-    background: white; padding: 36px 32px; border-radius: 28px;
+    background: var(--card); padding: 36px 32px; border-radius: 28px;
     border: 2px solid var(--border);
-    box-shadow: 0 8px 0 var(--border), 0 24px 60px rgba(147, 51, 234, 0.15);
+    box-shadow: 0 8px 0 var(--border), 0 24px 60px rgba(30, 38, 56, 0.25);
     max-width: 420px; width: 100%; text-align: center;
     position: relative; z-index: 1;
   }
   .login-mark {
-    font-size: 14px; color: var(--primary); font-weight: 500;
+    font-size: 14px; color: var(--orange); font-weight: 600;
     letter-spacing: 0.04em; margin-bottom: 12px;
+    font-style: normal !important;
   }
   .login-card h1 {
-    font-size: 30px; font-weight: 500; color: var(--ink);
-    margin-bottom: 8px;
+    font-size: 36px; font-weight: 700; color: var(--ink);
+    margin-bottom: 8px; font-style: italic;
   }
   .login-lead {
     color: var(--muted); font-size: 14px; line-height: 1.5;
@@ -547,15 +561,17 @@
 
   /* Group chat */
   .chat-card {
-    background: white; margin-top: 28px; border-radius: 24px;
+    background: var(--card); margin-top: 28px; border-radius: 24px;
     border: 2px solid var(--border);
-    box-shadow: 0 6px 0 var(--border), 0 18px 50px rgba(147, 51, 234, 0.08);
+    box-shadow: 0 6px 0 var(--border), 0 18px 50px rgba(30, 38, 56, 0.15);
     overflow: hidden;
   }
   .chat-header {
     padding: 16px 20px; border-bottom: 1.5px solid var(--border);
-    background: linear-gradient(135deg, #f3e8ff, #d1fae5);
+    background: linear-gradient(135deg, var(--bg-deep), var(--yellow));
   }
+  .chat-header h2 { color: var(--card) !important; text-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+  .chat-sub { color: var(--card) !important; opacity: 0.9; }
   .chat-header h2 { font-size: 17px; font-weight: 500; color: var(--ink); margin: 0; }
   .chat-sub { font-size: 12px; color: var(--muted); font-weight: 300; }
   .chat-list {
@@ -604,14 +620,14 @@
 
   /* Bottom caption */
   .app > p {
-    background: white; padding: 12px 22px !important;
+    background: var(--card); padding: 12px 22px !important;
     border-radius: 20px; border: 1.5px solid var(--border);
     box-shadow: 0 3px 0 var(--border); color: var(--muted) !important;
     width: fit-content; max-width: 100%;
     margin: 20px auto 0 !important;
     font-size: 13px !important; line-height: 1.6;
   }
-  .app > p b { color: var(--primary); }
+  .app > p b { color: var(--orange); }
 
   @media (max-width: 640px) {
     h1 { font-size: 24px; }
@@ -628,7 +644,7 @@
 <!-- Login screen (shown when not signed in) -->
 <div id="login-screen" class="login-screen">
   <div class="login-card">
-    <div class="login-mark">🌿 Lark · Summer 2026</div>
+    <div class="login-mark">☀️ Lark · Summer 2026</div>
     <h1>Sign in</h1>
     <p class="login-lead">A shared board for an unprogrammed summer — pool days, tennis, camp, music, bike rides, sleepovers. Enter your email and we'll send you a one-time sign-in link.</p>
     <form id="login-form" onsubmit="sendMagicLink(event)">
@@ -643,7 +659,7 @@
 <div class="app" style="display:none">
 <!-- everything below renders only when signed in -->
   <header>
-    <h1>🌿 Lark <span class="sub">Summer 2026 · bikes, pools & backyards for Lillian, Harper, Randi &amp; Kat</span></h1>
+    <h1>☀️ Lark <span class="sub">Summer 2026 · bikes, pools & backyards for Lillian, Harper, Randi &amp; Kat</span></h1>
     <div class="controls">
       <span style="font-size:13px;color:#6b7280">I am:</span>
       <select id="who-am-i"></select>
@@ -793,10 +809,10 @@
 
   // ==== Config — edit these to match your group ====
   const FAMILIES = [
-    { id: 'borntrager', name: 'Borntrager', kid: 'Randi',   color: '#f59e0b' },
-    { id: 'waldo',      name: 'Waldo',      kid: 'Lillian', color: '#10b981' },
-    { id: 'hanna',      name: 'Hanna',      kid: 'Harper',  color: '#ef4444' },
-    { id: 'nuber',      name: 'Nuber',      kid: 'Kat',     color: '#8b5cf6' }
+    { id: 'borntrager', name: 'Borntrager', kid: 'Randi',   color: '#ea7c3e' }, /* orange */
+    { id: 'waldo',      name: 'Waldo',      kid: 'Lillian', color: '#8fa476' }, /* sage */
+    { id: 'hanna',      name: 'Hanna',      kid: 'Harper',  color: '#c44a3f' }, /* coral red */
+    { id: 'nuber',      name: 'Nuber',      kid: 'Kat',     color: '#1e3a52' }  /* navy */
   ];
 
   const LOCATIONS = [
