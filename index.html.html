@@ -430,6 +430,16 @@
     font-weight: 400;
   }
   .delete-btn:hover { background: #fef2f2; }
+  .gcal-btn {
+    display: inline-block;
+    font-size: 12px; font-weight: 500;
+    color: var(--ink); text-decoration: none;
+    background: var(--card); border: 1.5px solid var(--ink);
+    padding: 4px 10px; border-radius: 8px;
+    box-shadow: 2px 2px 0 var(--ink);
+    transition: all 0.08s;
+  }
+  .gcal-btn:hover { background: var(--yellow); transform: translateY(-1px); }
 
   .new-entry {
     background: linear-gradient(135deg, var(--pink) 0%, var(--yellow) 100%);
@@ -589,12 +599,60 @@
     padding: 20px; background: var(--bg);
   }
   .login-card {
-    background: var(--card); padding: 36px 32px; border-radius: 28px;
-    border: 2px solid var(--border);
-    box-shadow: 0 8px 0 var(--border), 0 24px 60px rgba(38, 70, 83, 0.25);
-    max-width: 420px; width: 100%; text-align: center;
+    background: var(--card); padding: 36px 32px; border-radius: 20px;
+    border: 3px solid var(--ink);
+    box-shadow: 10px 10px 0 var(--orange), 0 24px 60px rgba(38, 70, 83, 0.25);
+    max-width: 480px; width: 100%; text-align: center;
     position: relative; z-index: 1;
   }
+  /* Landing carousel inside the login card */
+  .landing-carousel {
+    margin: 16px 0 22px;
+    min-height: 170px;
+    display: flex; flex-direction: column; align-items: stretch;
+  }
+  .landing-slide {
+    display: none;
+    text-align: center;
+    flex: 1;
+    animation: slideIn 0.45s ease;
+  }
+  .landing-slide.active { display: block; }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(12px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .landing-slide h1 {
+    font-family: 'Pacifico', cursive !important;
+    font-style: normal !important;
+    font-size: 36px !important;
+    font-weight: 400 !important;
+    color: var(--ink);
+    margin-bottom: 10px;
+    -webkit-text-stroke: 0;
+    text-shadow: none;
+    line-height: 1.1;
+  }
+  .landing-slide p {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: var(--ink);
+    padding: 0 8px;
+  }
+  .landing-slide p b { color: var(--primary); font-weight: 500; }
+  .landing-dots {
+    display: flex; justify-content: center; gap: 10px;
+    margin-top: 18px;
+  }
+  .landing-dot {
+    width: 11px; height: 11px; border-radius: 50%;
+    background: var(--card); border: 2px solid var(--ink);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .landing-dot.active { background: var(--orange); }
+  .landing-dot:hover { background: var(--yellow); }
   .login-mark {
     font-size: 14px; color: var(--orange); font-weight: 600;
     letter-spacing: 0.04em; margin-bottom: 12px;
@@ -744,14 +802,35 @@
 <div id="login-screen" class="login-screen">
   <div class="login-card">
     <div class="login-mark"><svg class="lark-flower" viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="#ffffff" stroke="#264653" stroke-width="1.2"><ellipse cx="0" cy="-28" rx="5" ry="25"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(40)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(80)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(120)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(160)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(200)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(240)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(280)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(320)"/></g><circle r="10" fill="#fbbf24"/></svg> Lark · Summer 2026</div>
-    <h1>Sign in</h1>
-    <p class="login-lead">A shared board for an unprogrammed summer — pool days, tennis, camp, music, bike rides, sleepovers. Enter your email and we'll send you a one-time sign-in link.</p>
+
+    <!-- Landing carousel -->
+    <div class="landing-carousel">
+      <div class="landing-slide active" data-slide="1">
+        <h1>Welcome to Lark</h1>
+        <p>A shared board for an unprogrammed summer — bikes, pools, camp, music, sleepovers, and whatever else the crew gets into.</p>
+      </div>
+      <div class="landing-slide" data-slide="2">
+        <h1>Offers &amp; asks, not group texts</h1>
+        <p><b>🤝 Can help / host</b> · <b>🙏 Need help</b> · <b>🏊 Kid going to</b> · <b>🚫 Kid busy</b>. Tap any of someone else's to respond.</p>
+      </div>
+      <div class="landing-slide" data-slide="3">
+        <h1>Plus a mom-only chat</h1>
+        <p>Lock plans when they're settled. Group chat for the grown-ups. Daily email digest of who's free and what's on.</p>
+      </div>
+      <div class="landing-dots">
+        <span class="landing-dot active" data-go="1"></span>
+        <span class="landing-dot" data-go="2"></span>
+        <span class="landing-dot" data-go="3"></span>
+      </div>
+    </div>
+
+    <!-- Sign-in -->
     <form id="login-form" onsubmit="sendMagicLink(event)">
       <input type="email" id="login-email" placeholder="you@example.com" required autocomplete="email">
       <button type="submit" class="primary">Send sign-in link</button>
     </form>
     <p id="login-status" class="login-status"></p>
-    <p class="login-fine">If you don't see the email, check spam. The link works on any device.</p>
+    <p class="login-fine">Check spam if you don't see the email. The link works on any device.</p>
   </div>
 </div>
 
@@ -787,17 +866,17 @@
     <span style="color:#9ca3af;">Tap an offer or ask from another family to respond.</span>
   </p>
 
-  <!-- Group chat -->
+  <!-- Mom chat -->
   <section class="chat-card" id="chat-card">
     <div class="chat-header">
-      <h2>💬 Group chat</h2>
-      <span class="chat-sub">Everyone in the group sees this.</span>
+      <h2>💬 Mom Chat</h2>
+      <span class="chat-sub">For grown-up stuff — wine, books, gossip, anything that isn't kid logistics ☝️</span>
     </div>
     <div class="chat-list" id="chat-list">
-      <p class="chat-empty">No messages yet. Say hi 👋</p>
+      <p class="chat-empty">No mom-talk yet. Spill the tea ☕</p>
     </div>
     <form class="chat-composer" id="chat-composer" onsubmit="sendChat(event)">
-      <input type="text" id="chat-input" placeholder="Message the group..." autocomplete="off" maxlength="500">
+      <input type="text" id="chat-input" placeholder="Tell the moms..." autocomplete="off" maxlength="500">
       <button type="submit" class="primary">Send</button>
     </form>
   </section>
@@ -1065,7 +1144,43 @@
   function showLogin() {
     document.getElementById('login-screen').style.display = 'flex';
     document.querySelector('.app').style.display = 'none';
+    startLandingCarousel();
   }
+
+  // ==== Landing carousel ====
+  let landingSlide = 1;
+  let landingTimer = null;
+  function showLandingSlide(n) {
+    const total = document.querySelectorAll('.landing-slide').length;
+    landingSlide = ((n - 1 + total) % total) + 1;
+    document.querySelectorAll('.landing-slide').forEach(s => {
+      s.classList.toggle('active', Number(s.dataset.slide) === landingSlide);
+    });
+    document.querySelectorAll('.landing-dot').forEach(d => {
+      d.classList.toggle('active', Number(d.dataset.go) === landingSlide);
+    });
+  }
+  function startLandingCarousel() {
+    if (landingTimer) clearInterval(landingTimer);
+    landingTimer = setInterval(() => showLandingSlide(landingSlide + 1), 5000);
+  }
+  function stopLandingCarousel() {
+    if (landingTimer) { clearInterval(landingTimer); landingTimer = null; }
+  }
+  // Wire dots + pause-on-hover
+  document.addEventListener('click', e => {
+    if (e.target.classList && e.target.classList.contains('landing-dot')) {
+      stopLandingCarousel();
+      showLandingSlide(Number(e.target.dataset.go));
+      startLandingCarousel();
+    }
+  });
+  document.addEventListener('mouseover', e => {
+    if (e.target.closest && e.target.closest('.landing-carousel')) stopLandingCarousel();
+  });
+  document.addEventListener('mouseout', e => {
+    if (e.target.closest && e.target.closest('.landing-carousel') && !e.relatedTarget?.closest?.('.landing-carousel')) startLandingCarousel();
+  });
 
   async function bootSignedIn(session) {
     currentUser = session.user;
@@ -1655,10 +1770,12 @@
              </div>
            </div>`
         : '';
+      const gcalBtn = `<a class="gcal-btn" href="${gcalUrl(e)}" target="_blank" rel="noopener" title="Add to Google Calendar">📅 Google Cal</a>`;
       return `
         <div class="entry-row${e.finalized ? ' finalized' : ''}" style="background:${hexWithAlpha(fam?.color,'15')};flex-wrap:wrap;">
           <div class="color-dot" style="background:${fam?.color}"></div>
           <div class="entry-text">${text}${e.notes?` <span class="entry-meta">— ${escapeHtml(e.notes)}</span>`:''}${seriesBadge}${lockBadge}</div>
+          ${gcalBtn}
           ${finalizeBtn}
           ${removeBtns}
           <div style="flex-basis:100%;">
@@ -1669,6 +1786,44 @@
     }).join('');
   }
   function hexWithAlpha(hex, alpha) { return hex ? hex + alpha : '#f3f4f6'; }
+
+  // Build a "click to add this to Google Calendar" URL from an entry.
+  // Uses Google's public render?action=TEMPLATE format — no API key, no auth.
+  function gcalUrl(e) {
+    const fam = FAMILIES.find(f => f.id === e.familyId);
+    const who = fam?.kid || fam?.name || '?';
+    const loc = LOCATIONS.find(l => l.id === e.location);
+    let title = '';
+    if (e.type === 'hosting')      title = `🤝 ${who} hosting`;
+    else if (e.type === 'asking')  title = `🙏 ${who} needs help`;
+    else if (e.type === 'going')   title = `🏊 ${who} → ${loc?.name || ''}`;
+    else if (e.type === 'busy')    title = `🚫 ${who} busy`;
+    if (loc?.name && (e.type === 'hosting')) title += ` @ ${loc.name}`;
+
+    const ymd = e.date.replace(/-/g, '');
+    let dates;
+    if (e.startTime && e.endTime) {
+      const s = e.startTime.replace(':', '') + '00'; // HHMMSS
+      const en = e.endTime.replace(':', '') + '00';
+      dates = `${ymd}T${s}/${ymd}T${en}`; // floating local time
+    } else {
+      const next = new Date(e.date + 'T00:00:00');
+      next.setDate(next.getDate() + 1);
+      const nextYmd = `${next.getFullYear()}${String(next.getMonth()+1).padStart(2,'0')}${String(next.getDate()).padStart(2,'0')}`;
+      dates = `${ymd}/${nextYmd}`; // all-day
+    }
+    const params = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: title,
+      dates: dates
+    });
+    if (loc?.name) params.set('location', loc.name);
+    const details = [];
+    if (e.notes) details.push(e.notes);
+    details.push('Added from Lark — your shared summer schedule');
+    params.set('details', details.join('\n\n'));
+    return 'https://www.google.com/calendar/render?' + params.toString();
+  }
 
   function expandRecurrence(startDate, repeat, untilDate) {
     // Returns array of date strings (YYYY-MM-DD) including the start date.
