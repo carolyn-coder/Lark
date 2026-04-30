@@ -557,6 +557,21 @@
   .color-picker {
     display: flex; gap: 10px; flex-wrap: wrap; padding: 6px 0;
   }
+  /* Day-of-week picker for custom recurrence */
+  .dow-picker { display: flex; gap: 6px; flex-wrap: wrap; }
+  .dow-pill {
+    width: 36px; height: 36px;
+    border: 2px solid var(--ink); border-radius: 50%;
+    background: var(--card); color: var(--ink);
+    cursor: pointer; font-weight: 500; font-size: 13px;
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0;
+  }
+  .dow-pill:hover { background: var(--yellow); }
+  .dow-pill.selected {
+    background: var(--ink); color: var(--yellow);
+    box-shadow: 2px 2px 0 var(--orange);
+  }
   .color-swatch {
     width: 36px; height: 36px; border-radius: 50%;
     border: 3px solid transparent; cursor: pointer;
@@ -992,7 +1007,21 @@
           <option value="daily">Every day</option>
           <option value="weekdays">Every weekday (Mon–Fri)</option>
           <option value="weekly">Same weekday every week</option>
+          <option value="custom">Pick specific days of the week</option>
         </select>
+      </div>
+      <div class="field" id="custom-days-field" style="display:none;">
+        <label>Which days?</label>
+        <div class="dow-picker" id="dow-picker">
+          <button type="button" class="dow-pill" data-dow="0">S</button>
+          <button type="button" class="dow-pill" data-dow="1">M</button>
+          <button type="button" class="dow-pill" data-dow="2">T</button>
+          <button type="button" class="dow-pill" data-dow="3">W</button>
+          <button type="button" class="dow-pill" data-dow="4">T</button>
+          <button type="button" class="dow-pill" data-dow="5">F</button>
+          <button type="button" class="dow-pill" data-dow="6">S</button>
+        </div>
+        <p style="font-size:11px; color:var(--muted); margin-top:6px;">Tap to toggle. e.g., Tennis on Mon/Wed/Fri</p>
       </div>
       <div class="field" id="repeat-until-field" style="display:none;">
         <label>Repeat until (inclusive)</label>
@@ -1653,9 +1682,15 @@
   function wireRecurrenceToggle() {
     const sel = document.getElementById('entry-repeat');
     const untilField = document.getElementById('repeat-until-field');
+    const customField = document.getElementById('custom-days-field');
     sel.onchange = () => {
-      untilField.style.display = sel.value === 'none' ? 'none' : 'block';
+      untilField.style.display  = sel.value === 'none' ? 'none' : 'block';
+      customField.style.display = sel.value === 'custom' ? 'block' : 'none';
     };
+    // Day-of-week pill toggling
+    document.querySelectorAll('#dow-picker .dow-pill').forEach(pill => {
+      pill.onclick = () => pill.classList.toggle('selected');
+    });
     // Dynamic form hints based on entry type
     const typeRadios = document.querySelectorAll('input[name="entry-type"]');
     const locationLabel = document.getElementById('location-label');
@@ -2051,8 +2086,9 @@
     return 'https://www.google.com/calendar/render?' + params.toString();
   }
 
-  function expandRecurrence(startDate, repeat, untilDate) {
+  function expandRecurrence(startDate, repeat, untilDate, customDays) {
     // Returns array of date strings (YYYY-MM-DD) including the start date.
+    // customDays: array of weekday numbers (0=Sun..6=Sat) — only used when repeat==='custom'
     const result = [startDate];
     if (repeat === 'none' || !untilDate) return result;
     const start = new Date(startDate + 'T00:00:00');
@@ -2067,6 +2103,7 @@
       if (repeat === 'daily') include = true;
       else if (repeat === 'weekdays') include = dow >= 1 && dow <= 5;
       else if (repeat === 'weekly') include = dow === startDow;
+      else if (repeat === 'custom') include = Array.isArray(customDays) && customDays.includes(dow);
       if (include) {
         const y = cur.getFullYear();
         const m = String(cur.getMonth() + 1).padStart(2, '0');
@@ -2088,6 +2125,13 @@
     const endTime = document.getElementById('entry-end-time').value || null;
     const repeat = document.getElementById('entry-repeat').value;
     const until = document.getElementById('entry-repeat-until').value;
+    const customDays = repeat === 'custom'
+      ? Array.from(document.querySelectorAll('#dow-picker .dow-pill.selected')).map(p => Number(p.dataset.dow))
+      : [];
+    if (repeat === 'custom' && customDays.length === 0) {
+      alert('Pick at least one day of the week, or change "Repeat" to "Just this day".');
+      return;
+    }
     if (!loggedInFamily) {
       alert('Pick which family you are first (top-right dropdown).');
       return;
@@ -2100,7 +2144,7 @@
       alert('End time must be after start time.');
       return;
     }
-    const dates = expandRecurrence(date, repeat, until);
+    const dates = expandRecurrence(date, repeat, until, customDays);
     if (repeat !== 'none' && dates.length > 1) {
       const ok = confirm(`This will add ${dates.length} entries (${dates[0]} through ${dates[dates.length-1]}). Continue?`);
       if (!ok) return;
@@ -2121,6 +2165,8 @@
     document.getElementById('entry-end-time').value = '';
     document.getElementById('entry-repeat').value = 'none';
     document.getElementById('repeat-until-field').style.display = 'none';
+    document.getElementById('custom-days-field').style.display = 'none';
+    document.querySelectorAll('#dow-picker .dow-pill').forEach(p => p.classList.remove('selected'));
   };
 
   // ==== Responses (cooperative replies) ====
