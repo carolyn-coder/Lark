@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lark — Summer 2026</title>
-<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">☀️</text></svg>' />
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -50 100 100"><g fill="%23ffffff" stroke="%231e3a52" stroke-width="1.2"><ellipse cx="0" cy="-28" rx="9" ry="22"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(32.73)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(65.45)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(98.18)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(130.91)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(163.64)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(196.36)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(229.09)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(261.82)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(294.55)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(327.27)"/></g><circle r="9" fill="%23fbbf24"/></svg>' />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,700;1,500;1,700&family=Fredoka:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -463,6 +463,14 @@
   }
 
   .family-picker { gap: 12px; }
+  .lark-flower {
+    display: inline-block;
+    width: 0.95em;
+    height: 0.95em;
+    vertical-align: -0.12em;
+    margin-right: 0.05em;
+  }
+  .login-mark .lark-flower { width: 1.15em; height: 1.15em; vertical-align: -0.2em; }
   .color-picker {
     display: flex; gap: 10px; flex-wrap: wrap; padding: 6px 0;
   }
@@ -674,7 +682,7 @@
 <!-- Login screen (shown when not signed in) -->
 <div id="login-screen" class="login-screen">
   <div class="login-card">
-    <div class="login-mark">☀️ Lark · Summer 2026</div>
+    <div class="login-mark"><svg class="lark-flower" viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="#ffffff" stroke="#1e3a52" stroke-width="1.2"><ellipse cx="0" cy="-28" rx="9" ry="22"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(32.73)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(65.45)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(98.18)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(130.91)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(163.64)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(196.36)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(229.09)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(261.82)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(294.55)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(327.27)"/></g><circle r="9" fill="#fbbf24"/></svg> Lark · Summer 2026</div>
     <h1>Sign in</h1>
     <p class="login-lead">A shared board for an unprogrammed summer — pool days, tennis, camp, music, bike rides, sleepovers. Enter your email and we'll send you a one-time sign-in link.</p>
     <form id="login-form" onsubmit="sendMagicLink(event)">
@@ -689,7 +697,7 @@
 <div class="app" style="display:none">
 <!-- everything below renders only when signed in -->
   <header>
-    <h1>☀️ Lark <span class="sub">Summer 2026 · bikes, pools & backyards for Lillian, Harper, Randi &amp; Kat</span></h1>
+    <h1><svg class="lark-flower" viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="#ffffff" stroke="#1e3a52" stroke-width="1.2"><ellipse cx="0" cy="-28" rx="9" ry="22"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(32.73)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(65.45)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(98.18)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(130.91)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(163.64)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(196.36)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(229.09)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(261.82)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(294.55)"/><ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(327.27)"/></g><circle r="9" fill="#fbbf24"/></svg> Lark <span class="sub">Summer 2026 · bikes, pools & backyards for Lillian, Harper, Randi &amp; Kat</span></h1>
     <div class="controls">
       <span style="font-size:13px;color:#6b7280">I am:</span>
       <select id="who-am-i"></select>
