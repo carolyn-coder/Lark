@@ -89,13 +89,7 @@
     color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     line-height: 1.3;
   }
-  .entry-pill.busy { opacity: 0.55; text-decoration: line-through; }
-  .entry-pill.hosting { box-shadow: inset 3px 0 0 rgba(255,255,255,0.7); }
-  .entry-pill.asking {
-    background-image: repeating-linear-gradient(45deg,
-      rgba(255,255,255,0.15) 0 4px, transparent 4px 8px);
-    outline: 1px dashed rgba(255,255,255,0.9); outline-offset: -2px;
-  }
+  /* legacy entry-pill type styles — superseded by the override block below */
   .response-row {
     display: flex; gap: 8px; align-items: center;
     padding: 6px 10px; margin-top: 4px; margin-left: 22px;
@@ -408,10 +402,16 @@
     text-shadow: 1.5px 1.5px 0 var(--ink);
   }
 
+  /* Entry pills — type drives the background color, family drives the left border */
   .entry-pill {
-    font-size: 11px; padding: 3px 7px; border-radius: 7px;
-    font-weight: 400; line-height: 1.3;
+    font-size: 11px; padding: 3px 7px 3px 5px; border-radius: 6px;
+    font-weight: 500; line-height: 1.3;
+    border-left: 5px solid #999;
   }
+  .entry-pill.hosting { background: #d1ecc4; color: #1c4530; }
+  .entry-pill.asking  { background: #f5c8b8; color: #6f2415; }
+  .entry-pill.going   { background: #fae0a8; color: #6a4108; }
+  .entry-pill.busy    { background: #e2ddca; color: #4a4438; opacity: 0.7; text-decoration: line-through; }
 
   /* Modals */
   .modal-overlay {
@@ -890,7 +890,7 @@
         </div>
         <div class="landing-slide" data-slide="2">
           <h1>Offers &amp; asks, not group texts</h1>
-          <p><b>🤝 Can help / host</b> · <b>🙏 Need help</b> · <b>🏊 Kid going to</b> · <b>🚫 Kid busy</b>. Tap any of someone else's to respond.</p>
+          <p><b>🤝 Can help / host</b> · <b>🙏 Need help</b> · <b>📍 Kid going to</b> · <b>🚫 Kid busy</b>. Tap any of someone else's to respond.</p>
         </div>
         <div class="landing-slide" data-slide="3">
           <h1>Plus a mom-only chat</h1>
@@ -952,7 +952,7 @@
   </div>
 
   <p style="text-align:center; color:#6b7280; font-size:12px; margin-top:16px;">
-    Click any day to add: <b>🤝 Can help / host</b> · <b>🙏 Need help</b> · <b>🏊 Kid going to</b> · <b>🚫 Kid busy</b><br>
+    Click any day to add: <b>🤝 Can help / host</b> · <b>🙏 Need help</b> · <b>📍 Kid going to</b> · <b>🚫 Kid busy</b><br>
     <span style="color:#9ca3af;">Tap an offer or ask from another family to respond.</span>
   </p>
 
@@ -985,7 +985,7 @@
         <div class="radio-group" id="type-radio">
           <label><input type="radio" name="entry-type" value="hosting" checked>🤝 Can help / host</label>
           <label><input type="radio" name="entry-type" value="asking">🙏 Need help</label>
-          <label><input type="radio" name="entry-type" value="going">🏊 Kid going to</label>
+          <label><input type="radio" name="entry-type" value="going">📍 Kid going to</label>
           <label><input type="radio" name="entry-type" value="busy">🚫 Kid busy</label>
         </div>
       </div>
@@ -1202,14 +1202,14 @@
       <div class="onboard-icon-row">
         <span class="onboard-emoji" title="Can help / host">🤝</span>
         <span class="onboard-emoji" title="Need help">🙏</span>
-        <span class="onboard-emoji" title="Kid going to">🏊</span>
+        <span class="onboard-emoji" title="Kid going to">📍</span>
         <span class="onboard-emoji" title="Kid busy">🚫</span>
       </div>
       <h2>Post what you can do, or what you need</h2>
       <ul class="onboard-list">
         <li><b>🤝 Can help / host</b> — "I'm at Brookside Saturday afternoon, send your kid"</li>
         <li><b>🙏 Need help</b> — "Anyone available to watch Randi while I'm in meetings?"</li>
-        <li><b>🏊 Kid going to</b> — "Lillian at tennis 10–noon"</li>
+        <li><b>📍 Kid going to</b> — "Lillian at tennis 10–noon"</li>
         <li><b>🚫 Kid busy</b> — "Camp all next week"</li>
       </ul>
     </div>
@@ -1970,11 +1970,11 @@
         let label = '';
         if (e.type === 'hosting') label = `${lockChip}🤝 ${who}${timeChip}${loc ? ' @ ' + shortLoc(loc) : ''}${respBadge}`;
         else if (e.type === 'asking') label = `${lockChip}🙏 ${who}${timeChip}${loc ? ' @ ' + shortLoc(loc) : ''}${respBadge}`;
-        else if (e.type === 'going') label = `${lockChip}🏊 ${who}${timeChip} → ${loc ? shortLoc(loc) : '?'}`;
+        else if (e.type === 'going') label = `${lockChip}📍 ${who}${timeChip} → ${loc ? shortLoc(loc) : '?'}`;
         else if (e.type === 'busy') label = `${lockChip}🚫 ${who}${timeChip}${e.notes ? ': ' + e.notes : ''}`;
         const title = label + (e.notes ? ' — ' + e.notes : '');
         const finalClass = e.finalized ? ' finalized' : '';
-        return `<div class="entry-pill ${e.type}${finalClass}" style="background:${fam?.color||'#999'}" title="${escapeAttr(title)}">${escapeHtml(label)}</div>`;
+        return `<div class="entry-pill ${e.type}${finalClass}" style="border-left-color:${fam?.color||'#999'}" title="${escapeAttr(title)}">${escapeHtml(label)}</div>`;
       }).join('');
       // Weather (today + next 7 days only)
       const w = weatherData[dateStr];
@@ -2054,7 +2054,7 @@
       let text = '';
       if (e.type === 'hosting') text = `🤝 <b>${escapeHtml(who)}</b> can help / host` + (loc ? ` at ${escapeHtml(loc.name)}` : '') + timeHtml;
       else if (e.type === 'asking') text = `🙏 <b>${escapeHtml(who)}</b> needs help` + (loc ? ` at ${escapeHtml(loc.name)}` : '') + timeHtml;
-      else if (e.type === 'going') text = `🏊 <b>${escapeHtml(who)}</b> going to ${escapeHtml(loc?.name || '?')}` + timeHtml;
+      else if (e.type === 'going') text = `📍 <b>${escapeHtml(who)}</b> going to ${escapeHtml(loc?.name || '?')}` + timeHtml;
       else if (e.type === 'busy') text = `🚫 <b>${escapeHtml(who)}</b> busy` + timeHtml;
       const isMine = e.familyId === loggedInFamily;
       const seriesBadge = e.recurrenceId ? '<span class="entry-meta" style="margin-left:6px;">🔁 series</span>' : '';
@@ -2122,7 +2122,7 @@
     let title = '';
     if (e.type === 'hosting')      title = `🤝 ${who} hosting`;
     else if (e.type === 'asking')  title = `🙏 ${who} needs help`;
-    else if (e.type === 'going')   title = `🏊 ${who} → ${loc?.name || ''}`;
+    else if (e.type === 'going')   title = `📍 ${who} → ${loc?.name || ''}`;
     else if (e.type === 'busy')    title = `🚫 ${who} busy`;
     if (loc?.name && (e.type === 'hosting')) title += ` @ ${loc.name}`;
 
