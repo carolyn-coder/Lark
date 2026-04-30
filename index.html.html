@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lark — Summer 2026</title>
-<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -50 100 100"><g fill="%23ffffff" stroke="%231e3a52" stroke-width="1.2"><ellipse cx="0" cy="-28" rx="5" ry="25"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(40)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(80)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(120)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(160)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(200)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(240)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(280)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(320)"/></g><circle r="10" fill="%23fbbf24"/></svg>' />
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -50 100 100"><g fill="%23ffffff" stroke="%23264653" stroke-width="1.2"><ellipse cx="0" cy="-28" rx="5" ry="25"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(40)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(80)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(120)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(160)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(200)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(240)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(280)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(320)"/></g><circle r="10" fill="%23fbbf24"/></svg>' />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,700;1,500;1,700&family=Fredoka:wght@300;400;500;600&family=Pacifico&display=swap" rel="stylesheet">
@@ -213,10 +213,10 @@
     --mint-bright: #8fa476;
     --mint-deep: #4d5e3c;
     --orange: #ea7c3e;
-    --primary: #1e3a52;   /* deep navy */
-    --primary-dark: #0f2236;
-    --primary-hover: #2d4d68;
-    --ink: #1a2638;       /* near-navy text */
+    --primary: #2a5e63;   /* vintage petrol teal */
+    --primary-dark: #1c3d42;
+    --primary-hover: #356b71;
+    --ink: #264653;       /* charcoal-teal — dark with green undertone */
     --muted: #6a5e52;     /* warm taupe */
     --border: #e8d8b8;    /* cream/sand border */
     --card: #fdf3df;      /* cream card */
@@ -281,7 +281,7 @@
     letter-spacing: 0; line-height: 1.0;
     -webkit-text-stroke: 3px #ffffff;
     paint-order: stroke fill;
-    text-shadow: 4px 4px 0 rgba(30, 58, 82, 0.25);
+    text-shadow: 4px 4px 0 rgba(38, 70, 83, 0.25);
   }
   @media (max-width: 640px) {
     h1 { font-size: 58px; -webkit-text-stroke: 2px #ffffff; }
@@ -331,7 +331,7 @@
     background: transparent; border: none; color: var(--primary);
     font-weight: 500;
   }
-  button.ghost:hover { background: rgba(30, 58, 82, 0.08); }
+  button.ghost:hover { background: rgba(38, 70, 83, 0.08); }
 
   .status-banner {
     background: linear-gradient(135deg, #fde047, #facc15);
@@ -401,12 +401,12 @@
 
   /* Modals */
   .modal-overlay {
-    background: rgba(26, 38, 56, 0.55); backdrop-filter: blur(6px);
+    background: rgba(38, 70, 83, 0.55); backdrop-filter: blur(6px);
   }
   .modal {
     border-radius: 20px; padding: 30px;
     background: var(--card);
-    box-shadow: 10px 10px 0 var(--orange), 0 25px 60px rgba(26, 38, 56, 0.4);
+    box-shadow: 10px 10px 0 var(--orange), 0 25px 60px rgba(38, 70, 83, 0.4);
     border: 3px solid var(--ink);
   }
   .modal h2 { font-size: 22px; font-weight: 500; }
@@ -473,6 +473,64 @@
     vertical-align: -0.12em;
     margin-right: 0.05em;
   }
+  /* Onboarding tour */
+  .onboarding-modal { max-width: 460px; }
+  .onboard-step { text-align: center; padding: 4px 0 8px; }
+  .onboard-icon { display: flex; justify-content: center; margin-bottom: 18px; }
+  .onboard-icon-row {
+    display: flex; justify-content: center; gap: 18px;
+    margin-bottom: 18px;
+  }
+  .onboard-emoji {
+    font-size: 32px; line-height: 1;
+    background: var(--card);
+    border: 2.5px solid var(--ink);
+    border-radius: 14px;
+    padding: 10px 12px;
+    box-shadow: 3px 3px 0 var(--orange);
+  }
+  .onboard-step h2 {
+    font-size: 28px; font-weight: 700;
+    margin-bottom: 14px;
+    color: var(--ink);
+  }
+  .onboard-body {
+    font-size: 15px; color: var(--ink);
+    line-height: 1.55; margin-bottom: 8px;
+    text-align: center;
+  }
+  .onboard-list {
+    list-style: none; padding: 0; margin: 0 0 8px;
+    text-align: left;
+  }
+  .onboard-list li {
+    font-size: 14px; color: var(--ink);
+    line-height: 1.6; padding: 8px 0;
+    border-bottom: 1.5px dashed var(--border);
+  }
+  .onboard-list li:last-child { border-bottom: none; }
+  .onboard-list b { color: var(--primary); font-weight: 600; }
+  .onboard-nav {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 22px; gap: 8px;
+  }
+  .onboard-dots { display: flex; gap: 8px; }
+  .onboard-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--border); border: 1.5px solid var(--ink);
+    cursor: pointer;
+  }
+  .onboard-dot.active { background: var(--orange); }
+  /* Help button in the controls bar */
+  .help-btn {
+    background: var(--card); border: 2px solid var(--ink);
+    color: var(--ink); width: 28px; height: 28px;
+    border-radius: 50%; padding: 0;
+    font-weight: 700; font-size: 14px;
+    box-shadow: 2px 2px 0 var(--ink);
+    cursor: pointer;
+  }
+  .help-btn:hover { background: var(--yellow); transform: translateY(-1px); }
   .login-mark .lark-flower { width: 1.15em; height: 1.15em; vertical-align: -0.2em; }
   .color-picker {
     display: flex; gap: 10px; flex-wrap: wrap; padding: 6px 0;
@@ -533,7 +591,7 @@
   .login-card {
     background: var(--card); padding: 36px 32px; border-radius: 28px;
     border: 2px solid var(--border);
-    box-shadow: 0 8px 0 var(--border), 0 24px 60px rgba(30, 38, 56, 0.25);
+    box-shadow: 0 8px 0 var(--border), 0 24px 60px rgba(38, 70, 83, 0.25);
     max-width: 420px; width: 100%; text-align: center;
     position: relative; z-index: 1;
   }
@@ -685,7 +743,7 @@
 <!-- Login screen (shown when not signed in) -->
 <div id="login-screen" class="login-screen">
   <div class="login-card">
-    <div class="login-mark"><svg class="lark-flower" viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="#ffffff" stroke="#1e3a52" stroke-width="1.2"><ellipse cx="0" cy="-28" rx="5" ry="25"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(40)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(80)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(120)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(160)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(200)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(240)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(280)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(320)"/></g><circle r="10" fill="#fbbf24"/></svg> Lark · Summer 2026</div>
+    <div class="login-mark"><svg class="lark-flower" viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="#ffffff" stroke="#264653" stroke-width="1.2"><ellipse cx="0" cy="-28" rx="5" ry="25"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(40)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(80)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(120)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(160)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(200)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(240)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(280)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(320)"/></g><circle r="10" fill="#fbbf24"/></svg> Lark · Summer 2026</div>
     <h1>Sign in</h1>
     <p class="login-lead">A shared board for an unprogrammed summer — pool days, tennis, camp, music, bike rides, sleepovers. Enter your email and we'll send you a one-time sign-in link.</p>
     <form id="login-form" onsubmit="sendMagicLink(event)">
@@ -700,7 +758,7 @@
 <div class="app" style="display:none">
 <!-- everything below renders only when signed in -->
   <header>
-    <h1><svg class="lark-flower" viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="#ffffff" stroke="#1e3a52" stroke-width="1.2"><ellipse cx="0" cy="-28" rx="5" ry="25"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(40)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(80)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(120)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(160)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(200)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(240)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(280)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(320)"/></g><circle r="10" fill="#fbbf24"/></svg> Lark</h1>
+    <h1><svg class="lark-flower" viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="#ffffff" stroke="#264653" stroke-width="1.2"><ellipse cx="0" cy="-28" rx="5" ry="25"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(40)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(80)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(120)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(160)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(200)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(240)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(280)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(320)"/></g><circle r="10" fill="#fbbf24"/></svg> Lark</h1>
     <div class="controls">
       <span style="font-size:13px;color:#6b7280">I am:</span>
       <select id="who-am-i"></select>
@@ -708,6 +766,7 @@
       <select id="view-filter">
         <option value="all">All families</option>
       </select>
+      <button class="help-btn" onclick="showOnboarding()" title="How does Lark work?">?</button>
       <button class="ghost" id="settings-btn" title="Settings">⚙️</button>
     </div>
   </header>
@@ -860,6 +919,67 @@
   </div>
 </div>
 
+<!-- Onboarding Tour -->
+<div class="modal-overlay" id="onboarding-modal">
+  <div class="modal onboarding-modal">
+    <button class="modal-close" onclick="closeOnboarding()">×</button>
+
+    <!-- Step 1: Welcome -->
+    <div class="onboard-step" data-step="1">
+      <div class="onboard-icon">
+        <svg viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width:96px;height:96px;">
+          <g fill="#ffffff" stroke="#264653" stroke-width="1.2"><ellipse cx="0" cy="-28" rx="5" ry="25"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(40)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(80)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(120)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(160)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(200)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(240)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(280)"/><ellipse cx="0" cy="-28" rx="5" ry="25" transform="rotate(320)"/></g><circle r="10" fill="#fbbf24"/>
+        </svg>
+      </div>
+      <h2>Welcome to Lark</h2>
+      <p class="onboard-body">A shared board for an unprogrammed summer — bikes, pools, camp, music, sleepovers, and whatever the crew gets into. Built so the moms can actually coordinate without a mile of group texts.</p>
+    </div>
+
+    <!-- Step 2: What you post -->
+    <div class="onboard-step" data-step="2" style="display:none;">
+      <div class="onboard-icon-row">
+        <span class="onboard-emoji" title="Can help / host">🤝</span>
+        <span class="onboard-emoji" title="Need help">🙏</span>
+        <span class="onboard-emoji" title="Kid going to">🏊</span>
+        <span class="onboard-emoji" title="Kid busy">🚫</span>
+      </div>
+      <h2>Post what you can do, or what you need</h2>
+      <ul class="onboard-list">
+        <li><b>🤝 Can help / host</b> — "I'm at Brookside Saturday afternoon, send your kid"</li>
+        <li><b>🙏 Need help</b> — "Anyone available to watch Randi while I'm in meetings?"</li>
+        <li><b>🏊 Kid going to</b> — "Lillian at tennis 10–noon"</li>
+        <li><b>🚫 Kid busy</b> — "Camp all next week"</li>
+      </ul>
+    </div>
+
+    <!-- Step 3: How it comes together -->
+    <div class="onboard-step" data-step="3" style="display:none;">
+      <div class="onboard-icon-row">
+        <span class="onboard-emoji" title="Respond">🙌</span>
+        <span class="onboard-emoji" title="Lock plan">🔒</span>
+        <span class="onboard-emoji" title="Group chat">💬</span>
+      </div>
+      <h2>It really does take a village</h2>
+      <ul class="onboard-list">
+        <li><b>Tap an offer or ask</b> from another mom to respond — "I've got her" or "count us in."</li>
+        <li><b>Lock it in</b> when a plan is settled. Everyone sees the 🔒 and knows it's a done deal.</li>
+        <li><b>Group chat</b> below the calendar for anything that's not date-specific.</li>
+        <li><b>Live updates</b> — everyone sees changes the moment they happen.</li>
+      </ul>
+    </div>
+
+    <div class="onboard-nav">
+      <button class="ghost" onclick="closeOnboarding()" id="onboard-skip">Skip</button>
+      <span class="onboard-dots">
+        <span class="onboard-dot active" data-go="1"></span>
+        <span class="onboard-dot" data-go="2"></span>
+        <span class="onboard-dot" data-go="3"></span>
+      </span>
+      <button class="primary" onclick="nextOnboarding()" id="onboard-next">Next →</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
   // ==============================================================
   // ▼▼ PASTE YOUR SUPABASE CONFIG HERE (from SUPABASE_SETUP.md) ▼▼
@@ -881,10 +1001,10 @@
     '#ea7c3e', /* orange */
     '#8fa476', /* sage */
     '#c44a3f', /* coral red */
-    '#1e3a52', /* navy */
+    '#2a5e63', /* petrol teal */
     '#d4a93a', /* mustard */
     '#a35792', /* plum */
-    '#3b8c8c', /* teal */
+    '#264653', /* charcoal teal */
     '#7a4f2d'  /* terracotta */
   ];
 
@@ -977,7 +1097,14 @@
     renderLegend();
     renderWelcomeFamilyPicker();
 
-    if (!loggedInFamily) openWelcomeModal();
+    if (!loggedInFamily) {
+      // First-time experience: show onboarding tour, then profile setup
+      if (!localStorage.getItem('larkOnboardingSeen')) {
+        showOnboarding();
+      } else {
+        openWelcomeModal();
+      }
+    }
     renderCalendar();
     renderChat();
   }
@@ -1114,7 +1241,7 @@
       id: r.id,
       name: r.name || '',
       kid: r.kid || '',
-      color: r.color || '#1e3a52'
+      color: r.color || '#264653'
     };
   }
   function familyToRow(f) {
@@ -1122,7 +1249,7 @@
       id: f.id,
       name: f.name || '',
       kid: f.kid || null,
-      color: f.color || '#1e3a52',
+      color: f.color || '#264653',
       created_by: currentUser?.id || null
     };
   }
@@ -1690,6 +1817,45 @@
   // ==== Welcome modal ====
   function openWelcomeModal() { document.getElementById('welcome-modal').classList.add('open'); }
   function closeWelcomeModal() { document.getElementById('welcome-modal').classList.remove('open'); }
+
+  // ==== Onboarding tour ====
+  let onboardStep = 1;
+  const ONBOARD_STEPS = 3;
+  function showOnboardStep(n) {
+    onboardStep = Math.max(1, Math.min(ONBOARD_STEPS, n));
+    document.querySelectorAll('.onboard-step').forEach(el => {
+      el.style.display = (Number(el.dataset.step) === onboardStep) ? '' : 'none';
+    });
+    document.querySelectorAll('.onboard-dot').forEach(d => {
+      d.classList.toggle('active', Number(d.dataset.go) === onboardStep);
+    });
+    const nextBtn = document.getElementById('onboard-next');
+    if (nextBtn) nextBtn.textContent = (onboardStep === ONBOARD_STEPS) ? 'Get started 🌼' : 'Next →';
+  }
+  window.showOnboarding = function() {
+    onboardStep = 1;
+    showOnboardStep(1);
+    document.getElementById('onboarding-modal').classList.add('open');
+  };
+  window.closeOnboarding = function() {
+    document.getElementById('onboarding-modal').classList.remove('open');
+    localStorage.setItem('larkOnboardingSeen', '1');
+  };
+  window.nextOnboarding = function() {
+    if (onboardStep < ONBOARD_STEPS) {
+      showOnboardStep(onboardStep + 1);
+    } else {
+      // Last step — finish: close onboarding, then open profile setup if needed
+      closeOnboarding();
+      if (!loggedInFamily) openWelcomeModal();
+    }
+  };
+  // Make dots clickable to jump
+  document.addEventListener('click', e => {
+    if (e.target.classList && e.target.classList.contains('onboard-dot')) {
+      showOnboardStep(Number(e.target.dataset.go));
+    }
+  });
 
   // Close modals on overlay click
   document.querySelectorAll('.modal-overlay').forEach(ov => {
